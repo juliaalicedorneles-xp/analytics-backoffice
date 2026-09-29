@@ -1,0 +1,23 @@
+{
+  "titulo": "Analytics Backoffice",
+  "meta": 5,
+  "slaDias": 2,
+  "metas": {},
+  "analistas": {},
+  "extras": [],
+  "dias": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "feriados": [],
+  "ausencias": [],
+  "alertaHoras": 24,
+  "expediente": [
+    9,
+    18
+  ],
+  "salvoEm": null
+}

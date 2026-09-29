@@ -1,0 +1,40 @@
+name: Atualizar dados do Pipefy (Analytics Backoffice)
+
+on:
+  schedule:
+    # A cada 15 minutos, de segunda a sexta, das 7h às 21h (horário de Brasília)
+    - cron: '*/15 10-23 * * 1-5'
+    # Uma vez por dia no fim de semana
+    - cron: '0 12 * * 0,6'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atualizar-pipefy
+  cancel-in-progress: false
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Buscar cards no Pipefy
+        run: node scripts/pipefy.mjs
+        env:
+          PIPEFY_CLIENT_ID: ${{ secrets.PIPEFY_CLIENT_ID }}
+          PIPEFY_CLIENT_SECRET: ${{ secrets.PIPEFY_CLIENT_SECRET }}
+          PIPEFY_TOKEN_URL: ${{ secrets.PIPEFY_TOKEN_URL }}
+          PIPEFY_TOKEN: ${{ secrets.PIPEFY_TOKEN }}
+          PIPE_ID: '306826478'
+          OCULTAR_TITULO: 'sim'
+      - name: Publicar se mudou
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dados.json
+          git diff --cached --quiet && echo "Sem mudanças" || (git commit -m "Atualiza dados do Pipefy" && git pull --rebase && git push)

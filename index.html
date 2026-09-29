@@ -1,0 +1,1358 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Analytics Backoffice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --xp:#FFC709; --preto:#000000; --branco:#FFFFFF;
+  --bg:#F1F1F1; --surface:#FFFFFF; --surface2:#F4F4F4; --ink:#0A0A0A; --muted:#666666; --faint:#9B9B9B; --line:#E2E2E2;
+  --atu:#FFC709; --atu-ink:#8F6A00; --atu-soft:#FFF2C2;
+  --con:#262626; --con-ink:#262626; --con-soft:#E4E4E4;
+  --sel-bg:#000000; --sel-ink:#FFFFFF;
+  --ok:#0F9D58; --ok-soft:#DDF3E7; --warn:#A87800; --warn-soft:#FFF2C2; --bad:#D93025; --bad-soft:#FBE1DE;
+  --hero:#000000; --hero-ink:#FFFFFF; --hero-muted:#A8A8A8; --hero-line:rgba(255,255,255,.12); --hero-empty:rgba(255,255,255,.22);
+  --display:"Sora", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#000000; --surface:#121212; --surface2:#1C1C1C; --ink:#F5F5F5; --muted:#A3A3A3; --faint:#6E6E6E; --line:#282828;
+    --atu-ink:#FFC709; --atu-soft:#3A2F06; --con:#E6E6E6; --con-ink:#E6E6E6; --con-soft:#2C2C2C;
+    --sel-bg:#FFC709; --sel-ink:#000000;
+    --ok:#34C77B; --ok-soft:#0F2E1E; --warn:#FFC709; --warn-soft:#3A2F06; --bad:#FF6B5E; --bad-soft:#3A1614;
+    --hero:#0B0B0B; --hero-line:rgba(255,255,255,.09);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#000000; --surface:#121212; --surface2:#1C1C1C; --ink:#F5F5F5; --muted:#A3A3A3; --faint:#6E6E6E; --line:#282828;
+  --atu-ink:#FFC709; --atu-soft:#3A2F06; --con:#E6E6E6; --con-ink:#E6E6E6; --con-soft:#2C2C2C;
+  --sel-bg:#FFC709; --sel-ink:#000000;
+  --ok:#34C77B; --ok-soft:#0F2E1E; --warn:#FFC709; --warn-soft:#3A2F06; --bad:#FF6B5E; --bad-soft:#3A1614;
+  --hero:#0B0B0B; --hero-line:rgba(255,255,255,.09);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--xp);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px 64px}
+
+/* faixa preta do topo */
+.barra-topo{background:#000;color:#fff;border-bottom:4px solid var(--xp)}
+.barra-topo .in{max-width:1240px;margin:0 auto;padding:26px 24px 24px;display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap}
+.marca{display:flex;align-items:center;gap:16px}
+.selo{width:48px;height:48px;border-radius:12px;background:var(--xp);display:grid;place-items:center;flex:none}
+.selo svg{width:26px;height:26px}
+.barra-topo h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,3.6vw,38px);letter-spacing:-.03em;line-height:1.05;margin:0}
+.fonte{margin-top:6px;color:#B5B5B5;font-size:13.5px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.tag.demo{background:rgba(255,199,9,.16);color:var(--xp)}
+.tag.real{background:rgba(52,199,123,.16);color:#5BDB98}
+.tag.vivo{background:var(--xp);color:#000}
+.tag i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.tag.vivo i{animation:pulso 2s infinite}
+@keyframes pulso{50%{opacity:.25}}
+.acoes{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);padding:10px 16px;border-radius:10px;font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{border-color:var(--faint)}
+.btn.prim{background:var(--xp);color:#000;border-color:var(--xp)}
+.btn.prim:hover{filter:brightness(1.06)}
+.btn svg{width:16px;height:16px}
+.link{background:none;border:0;padding:0;color:var(--xp);font-weight:600;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+
+/* filtros */
+.filtros{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);margin:0 -24px 22px;padding:14px 24px;display:flex;gap:12px 16px;flex-wrap:wrap;align-items:center;border-bottom:1px solid transparent}
+.filtros.fix{border-bottom-color:var(--line)}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;overflow-x:auto;max-width:100%;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{border:0;background:none;padding:7px 13px;border-radius:7px;font-size:13.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-ink)}
+.seg button .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:0;border:1px solid rgba(128,128,128,.35)}
+.intervalo{color:var(--muted);font-size:13.5px;margin-left:auto;font-weight:500}
+
+h2.secao{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02em;margin:34px 0 4px}
+p.secao{color:var(--muted);font-size:14px;margin:0 0 16px}
+
+/* herói: meta de hoje */
+.hero{background:var(--hero);color:var(--hero-ink);border-radius:24px;padding:30px 32px 26px;display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:34px;position:relative;overflow:hidden}
+.hero{border-top:6px solid var(--xp)}
+.hero-resumo h2{font-family:var(--display);font-size:16px;font-weight:600;color:var(--hero-muted);margin:0 0 14px}
+.hero-num{font-family:var(--display);font-weight:800;font-size:78px;line-height:.9;letter-spacing:-.05em;color:var(--xp)}
+.hero-num small{font-size:30px;color:var(--hero-muted);font-weight:600;letter-spacing:-.02em}
+.hero-txt{margin:12px 0 0;color:var(--hero-muted);font-size:15px;max-width:30ch}
+.hero-txt b{color:var(--hero-ink);font-weight:700}
+.legenda{display:flex;gap:16px;margin-top:22px;font-size:13px;color:var(--hero-muted);flex-wrap:wrap}
+.legenda span{display:inline-flex;align-items:center;gap:7px}
+.legenda i{width:11px;height:11px;border-radius:50%}
+.linhas{display:flex;flex-direction:column;position:relative;z-index:1}
+.linha-cab{display:grid;grid-template-columns:minmax(120px,1fr) auto minmax(64px,auto) calc(var(--nd,5) * var(--cw,38px));gap:18px;font-size:12.5px;color:var(--hero-muted);padding:0 0 8px;border-bottom:1px solid var(--hero-line)}
+.linha-cab span:nth-child(4){display:flex;justify-content:space-between;padding:0 4px}
+.linha{display:grid;grid-template-columns:minmax(120px,1fr) auto minmax(64px,auto) calc(var(--nd,5) * var(--cw,38px));gap:18px;align-items:center;padding:13px 0;border-bottom:1px solid var(--hero-line);background:none;border-left:0;border-right:0;border-top:0;text-align:left;width:100%;color:inherit}
+.linha:last-child{border-bottom:0}
+.linha:hover .nome{text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--xp)}
+.linha.sel .nome::after{content:"filtrando";font-size:11px;font-weight:700;background:var(--xp);color:#000;padding:2px 7px;border-radius:999px;margin-left:8px;vertical-align:2px}
+.pessoa{display:flex;align-items:center;gap:11px;min-width:0}
+.av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;flex:none;background:rgba(255,255,255,.1);color:var(--hero-ink)}
+.nome{font-weight:600;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dots{display:flex;gap:8px;align-items:center}
+.dot{width:24px;height:24px;border-radius:50%;border:2px dashed var(--hero-empty)}
+.dot.f{border:0;animation:pop .5s cubic-bezier(.3,1.6,.5,1) both}
+.dot.A{background:var(--xp)}.dot.C{background:#FFFFFF}
+.extra{font-size:13px;font-weight:700;color:var(--xp);margin-left:2px}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.placar{font-family:var(--display);font-weight:700;font-size:22px;text-align:right;white-space:nowrap}
+.placar small{white-space:nowrap}
+.placar small{color:var(--hero-muted);font-size:14px;font-weight:600}
+.placar.ok{color:var(--xp)}
+.semana{display:grid;grid-template-columns:repeat(var(--nd,5),1fr);gap:var(--gap,6px)}
+.linhas[style*="--cw: 31px"] .dia{font-size:10px;height:28px;border-radius:5px;letter-spacing:-.02em}
+.linhas[style*="--cw: 31px"] .semana{gap:3px}
+.linhas[style*="--cw: 31px"] .hbar{width:120px}
+.linhas[style*="--cw: 31px"] .linha,.linhas[style*="--cw: 31px"] .linha-cab{gap:14px}
+.dia.off{background:none;color:rgba(255,255,255,.3)}
+.ausente{font-size:13px;color:var(--hero-muted);padding:5px 12px;border:1px dashed rgba(255,255,255,.25);border-radius:999px;white-space:nowrap}
+.hbar{display:block;position:relative;width:200px;max-width:100%;height:10px;border-radius:99px;background:rgba(255,255,255,.14)}
+.hbar i{display:block;height:100%;border-radius:99px;background:var(--xp);max-width:100%}
+.hbar i.cheio{background:#34C77B}
+.hbar em{position:absolute;top:-4px;bottom:-4px;width:2px;background:#fff;border-radius:2px;transform:translateX(-1px)}
+.hmeio{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.hst{font-size:12px;font-weight:700}.hst.ok{color:#5BDB98}.hst.bad{color:#FF8F85}
+.linhas.sem-faixa .linha,.linhas.sem-faixa .linha-cab{grid-template-columns:minmax(120px,1fr) auto minmax(90px,auto)}
+.linhas.sem-faixa .semana,.linhas.sem-faixa .linha-cab span:nth-child(4){display:none}
+.dia{height:32px;border-radius:7px;display:grid;place-items:center;font-size:13px;font-weight:700;background:rgba(255,255,255,.08);color:var(--hero-muted)}
+.dia.bateu{background:var(--xp);color:#000}
+.dia.quase{background:rgba(255,255,255,.2);color:#fff}
+.dia.longe{background:rgba(255,107,94,.25);color:#FFB3AB}
+.dia.hoje{box-shadow:inset 0 0 0 2px #fff}
+.dia.fut{background:none;border:1px dashed var(--hero-line);color:rgba(255,255,255,.3);font-weight:600;font-size:11.5px}
+
+/* visão geral por analista */
+.geral{display:grid;grid-template-columns:repeat(auto-fit,minmax(214px,1fr));gap:12px}
+.gv{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:14px;text-align:left;color:inherit;width:100%}
+button.gv:hover{border-color:var(--faint)}
+.gv.sel{outline:2px solid var(--xp);outline-offset:-2px}
+.gv.time{background:var(--xp);border-color:var(--xp);color:#000}
+.gv-cab{display:flex;align-items:center;gap:10px}
+.gv-cab .av{background:var(--surface2);color:var(--ink);width:36px;height:36px}
+.gv.time .gv-cab .av{background:#000;color:var(--xp)}
+.gv-cab .nm{font-weight:700;font-size:15.5px;line-height:1.2}
+.gv-cab .ano{font-size:12.5px;color:var(--muted)}
+.gv.time .gv-cab .ano{color:rgba(0,0,0,.62)}
+.gv-row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:baseline}
+.gv-l{font-size:13px;font-weight:600;color:var(--muted)}
+.gv-row.foco .gv-l{color:var(--ink);font-weight:800}
+.gv-row.foco .gv-l::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--xp);margin-left:6px;vertical-align:2px}
+.gv.time .gv-row.foco .gv-l::after{background:#000}
+.gv.time .gv-l{color:rgba(0,0,0,.65)}
+.gv-v{font-family:var(--display);font-size:15px;color:var(--muted);white-space:nowrap}
+.gv-v b{font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.gv.time .gv-v{color:rgba(0,0,0,.6)} .gv.time .gv-v b{color:#000}
+.gv-bar{grid-column:1/-1;height:10px;border-radius:99px;background:var(--surface2);position:relative;overflow:visible;margin-top:4px}
+.gv.time .gv-bar{background:rgba(0,0,0,.12)}
+.gv-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--ink);max-width:100%}
+.gv-bar i.cheio{background:var(--ok)}
+.gv.time .gv-bar i{background:#000}
+.gv-bar em{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--xp);border-radius:2px;transform:translateX(-1px)}
+.gv.time .gv-bar em{background:#fff}
+.gv-s{grid-column:1/-1;font-size:12px;font-weight:600;margin-top:2px}
+.gv-s.ok{color:var(--ok)} .gv-s.bad{color:var(--bad)} .gv-s.neu{color:var(--muted)}
+.gv.time .gv-s{color:#000}
+.gv-sla{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;color:var(--muted);background:var(--surface2);border-radius:10px;padding:8px 11px}
+.gv-sla b{font-family:var(--display);font-size:16px;font-weight:800}
+.gv-sla b.ok{color:var(--ok)}.gv-sla b.me{color:var(--warn)}.gv-sla b.bad{color:var(--bad)}
+.gv.time .gv-sla{background:rgba(0,0,0,.1);color:rgba(0,0,0,.7)} .gv.time .gv-sla b{color:#000}
+.slab{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.slab.ok{background:var(--ok-soft);color:var(--ok)}.slab.bad{background:var(--bad-soft);color:var(--bad)}
+.gv-mix{display:flex;flex-wrap:wrap;gap:4px 12px;white-space:nowrap;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+.gv.time .gv-mix i{border-color:#000}
+.gv.time .gv-mix{border-color:rgba(0,0,0,.15);color:rgba(0,0,0,.7)}
+.gv-mix span{display:inline-flex;align-items:center;gap:6px}
+.gv-mix i{width:9px;height:9px;border-radius:2px;border:1px solid rgba(128,128,128,.35)}
+
+/* números */
+.kpis{overflow:hidden;display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border:1px solid var(--line);border-radius:18px}
+.kpi{padding:20px 22px;border-left:1px solid var(--line)}
+.kpi:first-child{border-left:0}
+.kpi.destaque{background:var(--atu-soft)}
+.kpi .k{font-size:13.5px;color:var(--muted);font-weight:500}
+.kpi .v{font-family:var(--display);font-weight:800;font-size:32px;letter-spacing:-.04em;line-height:1.2;margin-top:4px}
+.kpi .s{font-size:13px;color:var(--muted);margin-top:4px}
+.kpi .s b{font-weight:700}
+.split{display:flex;height:6px;border-radius:99px;overflow:hidden;margin-top:10px;background:var(--surface2)}
+.split i{display:block;height:100%}
+
+.grade{display:grid;grid-template-columns:5fr 7fr;gap:22px;margin-top:22px}
+.grade.b{grid-template-columns:1fr 1fr}
+.painel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px 24px;min-width:0}
+.painel.solo{margin-top:22px}
+.painel h3{font-family:var(--display);font-size:19px;font-weight:700;letter-spacing:-.02em;margin:0}
+.painel .sub{color:var(--muted);font-size:13.5px;margin:3px 0 18px}
+.cab-p{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.vazio{padding:30px 10px;text-align:center;color:var(--muted);font-size:14px}
+
+/* ranking */
+.podio{display:grid;grid-template-columns:1fr 1.1fr 1fr;align-items:end;gap:10px;margin-bottom:14px}
+.deg{text-align:center;background:none;border:0;padding:0;color:inherit}
+.deg .av{width:46px;height:46px;font-size:15px;margin:0 auto 8px;background:var(--surface2);color:var(--ink);border:2px solid var(--line)}
+.deg.p1 .av{width:58px;height:58px;font-size:18px;background:#000;color:var(--xp);border-color:var(--xp);box-shadow:0 0 0 4px var(--atu-soft)}
+.deg .nm{font-weight:700;font-size:14px;line-height:1.25}
+.deg .qt{color:var(--muted);font-size:12.5px;margin-bottom:8px}
+.bloco{border-radius:10px 10px 3px 3px;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:26px}
+.p1 .bloco{height:94px;background:var(--xp);color:#000}
+.p2 .bloco{height:66px;background:#000;color:#fff;box-shadow:inset 0 0 0 1px var(--line)}
+.p3 .bloco{height:48px;background:var(--surface2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.rk{display:flex;flex-direction:column}
+.rk-l{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left;color:inherit}
+.rk-l .pos{font-weight:800;color:var(--faint);font-size:13px}
+.rk-l .nm{font-weight:600;font-size:14.5px}
+.barra{height:7px;border-radius:99px;background:var(--surface2);display:flex;overflow:hidden;margin-top:5px}
+.barra i{display:block;height:100%}
+.rk-l .num{text-align:right;font-weight:800;font-size:15px}
+.rk-l .num small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+
+/* gráfico */
+.chart{display:flex;align-items:flex-end;gap:3px;height:210px;padding-top:24px;position:relative;border-bottom:1px solid var(--line)}
+.col{flex:1;display:flex;flex-direction:column-reverse;height:100%;justify-content:flex-start;position:relative;min-width:0}
+.col i{display:block;width:100%}
+.col i:first-child{border-radius:0 0 3px 3px}
+.col .topo{border-radius:4px 4px 0 0}
+.col:hover i{filter:brightness(1.1)}
+.col .tt{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:8px;white-space:nowrap;pointer-events:none;opacity:0;z-index:3;line-height:1.35;visibility:hidden}
+.col:hover .tt,.col:focus .tt{opacity:1;visibility:visible}
+.meta-linha{position:absolute;left:0;right:0;border-top:2px dashed var(--ink);opacity:.55;pointer-events:none}
+.meta-linha span{position:absolute;right:0;top:-22px;font-size:11.5px;font-weight:700;color:var(--ink);background:var(--surface);padding:0 4px}
+.eixo{display:flex;gap:3px;margin-top:6px}
+.eixo span{flex:1;text-align:center;font-size:11px;color:var(--faint);min-width:0;overflow:visible;white-space:nowrap}
+.leg{display:flex;gap:14px;font-size:13px;color:var(--muted)}
+.leg span{display:inline-flex;align-items:center;gap:6px}
+.leg i{width:10px;height:10px;border-radius:2px;border:1px solid rgba(128,128,128,.35)}
+
+/* fases */
+.fluxo{display:flex;flex-direction:column;gap:18px}
+.fluxo-t .tt2{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;margin-bottom:10px}
+.fluxo-t .tt2 i{width:10px;height:10px;border-radius:2px;border:1px solid rgba(128,128,128,.35)}
+.etapas{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.etapa{border-radius:12px;padding:13px 15px;position:relative;background:var(--surface2)}
+.etapa .en{font-size:13px;color:var(--muted);font-weight:500}
+.etapa .ev{font-family:var(--display);font-weight:800;font-size:25px;letter-spacing:-.03em;line-height:1.25}
+.etapa .es{font-size:12px;color:var(--muted)}
+.etapa.gargalo{background:#000;color:#fff}
+.etapa.gargalo .en,.etapa.gargalo .es{color:#B5B5B5}
+.etapa.gargalo .ev{color:var(--xp)}
+.etapa .flag{position:absolute;top:11px;right:12px;font-size:11px;font-weight:700;color:#000;background:var(--xp);padding:1px 7px;border-radius:999px}
+.total-ciclo{font-size:13px;color:var(--muted);margin-top:8px}
+.total-ciclo b{color:var(--ink)}
+
+/* mapa de calor */
+.tabwrap{overflow-x:auto;margin:0 -4px;padding:0 4px}
+table{border-collapse:separate;border-spacing:4px;width:100%;font-size:13.5px}
+th{font-weight:600;color:var(--muted);font-size:12.5px;text-align:center;padding:4px 6px;vertical-align:bottom}
+th.l,td.l{text-align:left}
+td{padding:9px 8px;text-align:center;border-radius:8px;white-space:nowrap}
+td.l{font-weight:600;padding-left:2px}
+td.c0{background:var(--surface2);color:var(--faint)}
+td.c1{background:var(--ok-soft);color:var(--ok);font-weight:700}
+td.c2{background:var(--surface2)}
+td.c3{background:var(--warn-soft);color:var(--warn);font-weight:700}
+td.c4{background:var(--bad-soft);color:var(--bad);font-weight:800}
+.th-t{display:flex;flex-direction:column;align-items:center;gap:2px}
+.th-t i{width:18px;height:4px;border-radius:2px}
+.nota{font-size:12.5px;color:var(--muted);margin-top:10px}
+
+.tab-an{border-spacing:0}
+.tab-an td{background:none;border-top:1px solid var(--line);border-radius:0;padding:11px 8px}
+.tab-an th{padding:4px 8px 10px}
+.pct{display:inline-block;min-width:48px;padding:3px 8px;border-radius:999px;font-weight:700;font-size:12.5px}
+.pct.ok{background:var(--ok-soft);color:var(--ok)}.pct.me{background:var(--warn-soft);color:var(--warn)}.pct.ru{background:var(--bad-soft);color:var(--bad)}
+
+/* alertas e cards */
+.alertas{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.al{border:1px solid var(--line);border-radius:12px;padding:13px 15px;background:var(--surface);position:relative;overflow:hidden}
+.al::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--faint)}
+.al.r::before{background:var(--bad)}.al.a::before{background:var(--xp)}.al.v::before{background:var(--ok)}
+.al .id{font-weight:700;font-size:14px;display:flex;justify-content:space-between;gap:8px}
+.al .fs{font-size:13px;color:var(--muted);margin-top:2px}
+.al .tm{font-family:var(--display);font-weight:800;font-size:17px;line-height:1.3;margin-top:6px;letter-spacing:-.03em}
+.al.r .tm{color:var(--bad)}.al.a .tm{color:var(--atu-ink)}
+.chip{font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.chip.A{background:var(--atu-soft);color:var(--atu-ink)}.chip.C{background:var(--con-soft);color:var(--con-ink)}
+
+.busca{border:1px solid var(--line);background:var(--surface2);border-radius:10px;padding:9px 13px;font-size:14px;width:240px;max-width:100%}
+.lista{display:flex;flex-direction:column}
+.cl{display:grid;grid-template-columns:110px minmax(110px,150px) minmax(140px,1fr) minmax(200px,2fr) 112px;gap:14px;align-items:center;padding:11px 0;border-top:1px solid var(--line);font-size:13.5px}
+.cl.h{font-size:12.5px;color:var(--muted);font-weight:600;border-top:0;padding-top:0}
+.cl .id{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cl .st{color:var(--muted)}
+.tl{display:flex;height:22px;border-radius:6px;overflow:hidden;background:var(--surface2)}
+.tl i{display:flex;align-items:center;padding:0 7px;font-size:11.5px;font-weight:700;font-style:normal;white-space:nowrap;overflow:hidden;min-width:3px}
+.tl i.bA{background:var(--atu-soft);color:var(--atu-ink)}.tl i.aA{background:var(--atu);color:#000}
+.tl i.bC{background:var(--con-soft);color:var(--con-ink)}.tl i.aC{background:var(--con);color:var(--surface)}
+.tl i.vivo{background-image:repeating-linear-gradient(135deg,transparent 0 6px,rgba(128,128,128,.25) 6px 12px)}
+.cl .tot{text-align:right;font-weight:700}
+.mais{margin:14px auto 0;display:block}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(120px);background:#000;color:#fff;border-left:4px solid var(--xp);padding:13px 18px;border-radius:10px;font-size:14px;font-weight:500;max-width:min(520px,calc(100% - 32px));transition:transform .35s cubic-bezier(.3,1.3,.5,1);z-index:20;visibility:hidden}
+.toast.on{transform:translateX(-50%) translateY(0);visibility:visible}
+.drop{position:fixed;inset:0;background:rgba(255,199,9,.2);border:3px dashed var(--xp);display:none;place-items:center;z-index:30;font-family:var(--display);font-size:28px;font-weight:800;color:var(--ink)}
+.drop.on{display:grid}
+
+.btn.sec{background:transparent;color:#fff;border-color:#3A3A3A}
+.btn.sec:hover{border-color:var(--xp)}
+.btn.sec .pt{width:8px;height:8px;border-radius:50%;background:var(--xp)}
+dialog#ajustes{padding:0;border:0;border-radius:20px;width:min(660px,calc(100% - 24px));max-height:calc(100dvh - 24px);background:var(--surface);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.4);overflow:hidden}
+dialog#ajustes::backdrop{background:rgba(0,0,0,.6)}
+.aj{display:flex;flex-direction:column;max-height:calc(100dvh - 24px)}
+.aj-cab{background:#000;color:#fff;border-bottom:4px solid var(--xp);padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.aj-cab h2{font-family:var(--display);font-size:20px;letter-spacing:-.02em;margin:0}
+.aj-cab .x{background:none;border:0;color:#fff;font-size:28px;line-height:1;padding:0 4px}
+.aj-corpo{overflow:auto;padding:4px 22px 12px;flex:1}
+.aj fieldset{border:0;margin:0;padding:0;min-width:0}
+.aj fieldset:disabled{opacity:.5}
+.aj-s{padding:18px 0;border-bottom:1px solid var(--line)}
+.aj-s:last-child{border-bottom:0}
+.aj-s h3{font-size:15.5px;font-weight:700;margin:0;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.aj-s p{margin:3px 0 12px;color:var(--muted);font-size:13.5px}
+.cont{font-size:12px;font-weight:700;background:var(--xp);color:#000;padding:2px 10px;border-radius:999px;white-space:nowrap}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);font-size:20px;font-weight:700}
+.stepper input{width:74px;height:42px;text-align:center;font-family:var(--display);font-size:22px;font-weight:800;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.stepper span{color:var(--muted);font-size:14px;margin-left:4px}
+.campo{border:1px solid var(--line);border-radius:10px;background:var(--surface2);padding:9px 12px;font-size:14px;min-width:0}
+.aj-row{display:grid;grid-template-columns:auto minmax(0,1fr) 92px auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.aj-row .nm{font-weight:600;font-size:14.5px}
+.aj-row .nm small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.aj-row.off .nm{color:var(--faint)}
+.aj-row .campo{width:92px;text-align:center}
+.aj-an-cab{display:grid;grid-template-columns:auto minmax(0,1fr) 92px auto;gap:12px;font-size:12px;color:var(--muted);font-weight:600;padding-bottom:6px}
+.chave{position:relative;display:inline-block;width:42px;height:24px;flex:none}
+.chave input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer;z-index:1}
+.chave span{position:absolute;inset:0;border-radius:99px;background:var(--line);transition:background .2s}
+.chave span::after{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+.chave input:checked+span{background:#000}
+:root[data-theme="dark"] .chave input:checked+span{background:var(--xp)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chave input:checked+span{background:var(--xp)}}
+.chave input:checked+span::after{transform:translateX(18px)}
+.chave input:focus-visible+span{outline:2px solid var(--xp);outline-offset:2px}
+.aj-add{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.aj-add .campo{flex:1 1 150px}
+.dsem{display:flex;gap:6px;flex-wrap:wrap}
+.dsem button{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 12px;font-weight:700;font-size:13.5px;min-width:52px}
+.dsem button[aria-pressed="true"]{background:#000;color:var(--xp);border-color:#000}
+.fichas{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.ficha{display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:4px 4px 4px 12px;font-size:13px}
+.ficha button{border:0;background:none;width:24px;height:24px;border-radius:50%;font-size:16px;line-height:1;color:var(--muted)}
+.ficha button:hover{background:var(--line);color:var(--ink)}
+.aj-pe{display:flex;gap:10px;align-items:center;padding:14px 22px;border-top:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
+.aj-pe .sp{flex:1}
+.aj-caixa{border-radius:14px;padding:15px 16px;margin:16px 0 2px;font-size:13.5px}
+.aj-caixa.login{background:var(--atu-soft)}
+.aj-caixa.info{background:var(--surface2);color:var(--muted)}
+.aj-caixa.adm{background:var(--ok-soft);color:var(--ok);font-weight:600;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.aj-caixa h3{margin:0 0 4px;font-size:15px}
+.aj-caixa p{margin:0 0 10px;color:var(--muted)}
+.aj-caixa .aj-add{margin-top:0}
+.erro{color:var(--bad);font-weight:600;font-size:13px;margin-top:8px}
+.aj .link{color:var(--ink)}
+@media (max-width:680px){
+  dialog#ajustes{width:100%;max-width:100%;height:100%;max-height:100%;border-radius:0}
+  .aj{max-height:100%;height:100%}
+  .aj-cab{padding-top:calc(18px + env(safe-area-inset-top,0px))}
+  .aj-pe{padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+  .aj-row,.aj-an-cab{grid-template-columns:auto minmax(0,1fr) 72px}
+  .aj-row .campo{width:72px}
+  .aj-row .rm{grid-column:2/-1;justify-self:start}
+  .aj-pe .sp{display:none}
+  .aj-pe .btn{flex:1;justify-content:center}
+  .aj-pe .link{order:3;width:100%;text-align:center}
+}
+@media (max-width:1020px){
+  .hero{grid-template-columns:1fr;gap:22px}
+  .grade,.grade.b{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kpi:first-child{grid-column:1/-1}
+  .kpi:nth-child(2n){border-left:0}
+  .kpi:nth-child(n+2){border-top:1px solid var(--line)}
+  .kpi.destaque{border-radius:0}
+}
+@media (max-width:680px){
+  .wrap{padding:0 16px 48px}
+  .barra-topo .in{padding:20px 16px 18px}
+  .selo{width:40px;height:40px}
+  .filtros{margin:0 -16px 16px;padding:10px 16px}
+  .intervalo{margin-left:0;width:100%}
+  .hero{padding:22px 18px;border-radius:20px}
+  .hero-num{font-size:62px}
+  .linha-cab{display:none}
+  .linha{grid-template-columns:1fr auto;grid-template-areas:"p s" "d d" "w w";gap:10px}
+  .linha .pessoa{grid-area:p}.linha .placar{grid-area:s}.linha .dots{grid-area:d}.linha .semana{grid-area:w}
+  .dot{width:28px;height:28px}
+  .linhas.sem-faixa .linha{grid-template-columns:1fr auto}
+  .hmeio{align-items:stretch;width:100%}
+  .hbar{width:100%}
+  .geral{grid-template-columns:1fr}
+  .kpi{padding:16px}
+  .kpi .v{font-size:27px}
+  .painel{padding:18px 16px;border-radius:16px}
+  .cl{grid-template-columns:1fr auto;gap:4px 12px}
+  .cl.h{display:none}
+  .cl .st{grid-column:1/-1}.cl .tl{grid-column:1/-1;margin-top:4px}
+  .cl .tot{grid-row:1;grid-column:2}
+  .cl .an{grid-row:2;grid-column:1}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="barra-topo">
+  <div class="in">
+    <div class="marca">
+      <div class="selo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V11M10 19V5M16 19v-6M22 19H2"/></svg></div>
+      <div>
+        <h1 id="titulo">Analytics Backoffice</h1>
+        <div class="fonte" id="fonte"></div>
+      </div>
+    </div>
+    <div class="acoes">
+      <button type="button" class="btn sec" id="abrir-ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Ajustes<span class="pt" id="pt-admin" hidden></span></button>
+      <label class="btn prim" for="arq">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>
+        Carregar Excel do Pipefy
+      </label>
+      <input type="file" id="arq" accept=".xlsx,.xls,.csv" hidden>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="filtros" id="filtros" aria-label="Filtros">
+    <div class="seg" id="f-per" role="group" aria-label="Período"></div>
+    <div class="seg" id="f-tipo" role="group" aria-label="Tipo de card"></div>
+    <div class="seg" id="f-an" role="group" aria-label="Analista"></div>
+    <div class="intervalo" id="intervalo"></div>
+  </nav>
+
+  <section class="hero" aria-labelledby="h-meta">
+    <div class="hero-resumo">
+      <h2 id="h-meta">Meta de hoje</h2>
+      <div class="hero-num" id="hero-num"></div>
+      <p class="hero-txt" id="hero-txt"></p>
+      <div class="legenda">
+        <span><i style="background:var(--xp)"></i>Atualização</span>
+        <span><i style="background:#fff"></i>Consolidação</span>
+        <span><i style="border:2px dashed var(--hero-empty)"></i>Falta</span>
+      </div>
+    </div>
+    <div class="linhas" id="linhas"></div>
+  </section>
+
+  <h2 class="secao">Visão geral</h2>
+  <p class="secao" id="gv-sub"></p>
+  <section class="geral" id="geral" aria-label="Visão geral por analista"></section>
+
+  <h2 class="secao">Detalhe do período</h2>
+  <p class="secao">Muda conforme os filtros de período, tipo e analista lá em cima</p>
+  <section class="kpis" id="kpis" aria-label="Resumo do período"></section>
+
+  <div class="grade">
+    <section class="painel">
+      <h3>Ranking</h3>
+      <p class="sub" id="rk-sub">Quem mais entregou no período</p>
+      <div id="ranking"></div>
+    </section>
+    <section class="painel">
+      <div class="cab-p">
+        <div><h3>Entregas ao longo do tempo</h3><p class="sub" id="ch-sub"></p></div>
+        <div class="leg"><span><i style="background:var(--atu)"></i>Atualização</span><span><i style="background:var(--con)"></i>Consolidação</span></div>
+      </div>
+      <div id="chart"></div>
+    </section>
+  </div>
+
+  <div class="grade b">
+    <section class="painel">
+      <h3>Quanto tempo cada fase leva</h3>
+      <p class="sub">Tempo médio que os cards ficaram em cada fase no período</p>
+      <div id="fases"></div>
+    </section>
+    <section class="painel">
+      <h3>Tempo por analista em cada fase</h3>
+      <p class="sub">Verde é mais rápido que a média do time, vermelho é mais lento</p>
+      <div id="calor"></div>
+    </section>
+  </div>
+
+  <section class="painel solo">
+    <h3>Desempenho por analista</h3>
+    <p class="sub" id="an-sub"></p>
+    <div class="tabwrap" id="analistas"></div>
+  </section>
+
+  <section class="painel solo">
+    <h3>Cards parados agora</h3>
+    <p class="sub">Cards em aberto, do que está há mais tempo na fase atual para o mais recente</p>
+    <div id="alertas"></div>
+  </section>
+
+  <section class="painel solo">
+    <div class="cab-p">
+      <div><h3>Todos os cards</h3><p class="sub">Cada barra mostra quanto tempo o card passou em cada fase</p></div>
+      <input class="busca" id="busca" type="search" placeholder="Buscar card ou analista" aria-label="Buscar card ou analista">
+    </div>
+    <div id="cards"></div>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+<div class="drop" id="drop">Solte o Excel do Pipefy aqui</div>
+
+<dialog id="ajustes" aria-labelledby="aj-t">
+  <form method="dialog" class="aj">
+    <header class="aj-cab"><h2 id="aj-t">Ajustes do painel</h2><button class="x" value="fechar" aria-label="Fechar">×</button></header>
+    <div class="aj-corpo" id="aj-corpo"></div>
+    <footer class="aj-pe" id="aj-pe"></footer>
+  </form>
+</dialog>
+<script>
+/* ============ constantes e utilidades ============ */
+const H = 36e5, DIA = 864e5;
+const CHAVE = 'painel-carteiras-v1', CHAVE_CFG = 'painel-cfg-v1', CHAVE_TOKEN = 'painel-admin-token';
+const TIPO = { A: 'Atualização', C: 'Consolidação' };
+const FASES = [
+  { k: 'bA', t: 'A', n: 'Backlog' }, { k: 'aA', t: 'A', n: 'Em andamento' },
+  { k: 'bC', t: 'C', n: 'Backlog' }, { k: 'aC', t: 'C', n: 'Em andamento' }
+];
+const DIAS_SEM = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const MESES_L = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const SEM_RESP = 'Sem responsável';
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const sod = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+const addD = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const segunda = d => { const x = sod(d); return addD(x, -((x.getDay() + 6) % 7)); };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const deYmd = s => { const [a, m, d] = s.split('-').map(Number); return new Date(a, m - 1, d); };
+const iniciais = n => n.split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+const num = n => n.toLocaleString('pt-BR');
+const dataCurta = d => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+const dataHora = d => `${dataCurta(d)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+const soma = a => a.reduce((s, x) => s + x, 0);
+const media = a => a.length ? soma(a) / a.length : null;
+const mediana = a => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const pctTxt = p => p == null ? '–' : Math.round(p * 100) + '%';
+function dur(h) {
+  if (h == null || isNaN(h)) return '–';
+  if (h < 1) return `${Math.max(1, Math.round(h * 60))} min`;
+  if (h < 24) return `${h.toFixed(1).replace('.', ',')} h`;
+  const d = h / 24; return `${d.toFixed(d < 10 ? 1 : 0).replace('.', ',')} ${d < 1.05 ? 'dia' : 'dias'}`;
+}
+function durUtil(h) {
+  if (h == null || isNaN(h)) return '–';
+  if (h < 24) return dur(h);
+  const d = h / 24; return `${d.toFixed(1).replace('.', ',')} ${d < 1.05 ? 'dia útil' : 'dias úteis'}`;
+}
+
+/* ============ ajustes (config) ============ */
+const PADRAO = {
+  titulo: 'Analytics Backoffice', meta: 5, slaDias: 2, metas: {}, analistas: {}, extras: [],
+  dias: [1, 2, 3, 4, 5], feriados: [], ausencias: [], alertaHoras: 24, expediente: [9, 18], salvoEm: null
+};
+let CFG = clone(PADRAO);
+function normalizarCfg(c) {
+  const x = Object.assign(clone(PADRAO), c || {});
+  const int = (v, min, max, pad) => { v = Math.round(+v); return isNaN(v) ? pad : Math.min(max, Math.max(min, v)); };
+  x.meta = int(x.meta, 1, 100, 5);
+  x.slaDias = int(x.slaDias, 1, 30, 2);
+  x.alertaHoras = int(x.alertaHoras, 1, 720, 24);
+  if (!Array.isArray(x.dias) || !x.dias.length) x.dias = [1, 2, 3, 4, 5];
+  if (!Array.isArray(x.expediente) || x.expediente.length !== 2 || +x.expediente[1] <= +x.expediente[0]) x.expediente = [9, 18];
+  for (const k of ['feriados', 'ausencias', 'extras']) if (!Array.isArray(x[k])) x[k] = [];
+  for (const k of ['metas', 'analistas']) if (!x[k] || typeof x[k] !== 'object') x[k] = {};
+  for (const n in x.metas) { const v = Math.round(+x.metas[n]); if (!v || v < 1) delete x.metas[n]; else x.metas[n] = Math.min(100, v); }
+  if (!x.titulo || x.titulo === 'Carteiras no Pipefy') x.titulo = PADRAO.titulo;
+  x.titulo = String(x.titulo).slice(0, 60);
+  return x;
+}
+const diaUtil = d => CFG.dias.includes(d.getDay()) && !CFG.feriados.includes(ymd(d));
+const ausente = (nome, d) => { const k = ymd(d); return CFG.ausencias.some(a => a.nome === nome && k >= a.de && k <= a.ate); };
+const diaDeMeta = (nome, d) => diaUtil(d) && !ausente(nome, d);
+const metaDe = nome => CFG.metas[nome] ?? CFG.meta;
+const ativo = nome => CFG.analistas[nome]?.ativo ?? (nome !== SEM_RESP);
+function todosNomes(cfg = CFG) { return [...new Set([...DADOS.cards.map(c => c.analista), ...cfg.extras])].sort((a, b) => a.localeCompare(b, 'pt-BR')); }
+const analistas = () => todosNomes().filter(ativo);
+const cards = () => DADOS.cards.filter(c => ativo(c.analista));
+
+/* ============ SLA em dias úteis ============ */
+function slaInicio(c) {
+  const ins = ['bA', 'bC'].map(k => c.f[k]?.in).filter(Boolean);
+  return ins.length ? new Date(Math.min(...ins)) : c.criado;
+}
+function horasUteis(a, b) {
+  if (!a || !b || b <= a) return 0;
+  let h = 0;
+  for (let d = sod(a); d < b; d = addD(d, 1)) {
+    if (!diaUtil(d)) continue;
+    const ini = Math.max(+d, +a), fim = Math.min(+addD(d, 1), +b);
+    if (fim > ini) h += (fim - ini) / H;
+  }
+  return h;
+}
+function somaUteis(inicio, dias) {
+  let resto = dias * 24 * H, t = new Date(inicio);
+  for (let i = 0; i < 400; i++) {
+    const fimDia = addD(sod(t), 1);
+    if (diaUtil(sod(t))) { const pega = Math.min(resto, fimDia - t); resto -= pega; t = new Date(+t + pega); if (resto <= 0) return t; }
+    t = fimDia;
+  }
+  return t;
+}
+function sla(c) {
+  const ini = slaInicio(c); if (!ini) return null;
+  const prazo = somaUteis(ini, CFG.slaDias);
+  const fim = c.concl || AGORA;
+  const gasto = horasUteis(ini, fim);
+  return { ini, prazo, gasto, ok: fim <= prazo, aberto: !c.concl, resta: c.concl ? null : horasUteis(AGORA, prazo) - (AGORA > prazo ? horasUteis(prazo, AGORA) : 0) };
+}
+const slaPct = lista => { const s = lista.map(sla).filter(Boolean); return s.length ? s.filter(x => x.ok).length / s.length : null; };
+
+/* ============ dados de exemplo (mesmo formato do Excel) ============ */
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const arred = d => { const x = new Date(d); x.setMinutes(Math.round(x.getMinutes() / 5) * 5, 0, 0); return x; };
+function gerarExemplo(agora) {
+  const r = rng(20260928), semana = d => d.getDay() > 0 && d.getDay() < 6;
+  const time = [['Ana Souza', 1.18], ['Bruno Lima', .96], ['Carla Dias', 1.06], ['Diego Alves', .82]];
+  const lista = [];
+  for (let d = addD(sod(agora), -160); d <= agora; d = addD(d, 1)) {
+    if (!semana(d)) continue;
+    for (const [nome, sk] of time) {
+      let n = Math.round(sk * (3 + r() * 4)); if (r() < .08) n = Math.max(0, n - 3);
+      for (let i = 0; i < n; i++) {
+        const t = r() < .6 ? 'A' : 'C';
+        const concl = arred(new Date(+d + (9 + r() * 9.5) * H));
+        if (concl > agora) continue;
+        const andH = (t === 'A' ? 1 + r() * 7 : 3 + r() * 20) * (1.5 - sk * .45);
+        const backH = r() < .15 ? 24 + r() * 70 : .5 + r() * 18;
+        const aIn = arred(concl - andH * H), bIn = arred(aIn - backH * H);
+        lista.push({ analista: nome, tipo: t, fase: 'Entregue ' + TIPO[t], status: 'entregue', criado: bIn, concl,
+          f: { ['b' + t]: { in: bIn, out: aIn }, ['a' + t]: { in: aIn, out: concl } } });
+      }
+    }
+  }
+  for (const [nome] of time) {
+    const n = 2 + Math.floor(r() * 3);
+    for (let i = 0; i < n; i++) {
+      const t = r() < .55 ? 'A' : 'C', idade = r() < .25 ? 30 + r() * 60 : 1 + r() * 20;
+      const bIn = arred(agora - idade * H), andando = r() < .6, f = {};
+      if (andando) { const aIn = arred(+bIn + idade * H * (.2 + r() * .5)); f['b' + t] = { in: bIn, out: aIn }; f['a' + t] = { in: aIn, out: null }; }
+      else f['b' + t] = { in: bIn, out: null };
+      lista.push({ analista: nome, tipo: t, status: andando ? 'andamento' : 'backlog',
+        fase: andando ? 'Em andamento ' + TIPO[t] : (t === 'A' ? 'Atualização de Portfólio' : 'Consolidação'), criado: bIn, concl: null, f });
+    }
+  }
+  lista.sort((a, b) => a.criado - b.criado);
+  lista.forEach((c, i) => c.id = 'CARD-' + String(i + 1).padStart(3, '0'));
+  return lista;
+}
+
+/* ============ leitura do Excel do Pipefy ============ */
+const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+function lerData(v) {
+  if (v == null || v === '') return null;
+  if (v instanceof Date) return isNaN(v) ? null : v;
+  if (typeof v === 'number') {
+    const u = new Date(Math.round((v - 25569) * DIA));
+    return new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate(), u.getUTCHours(), u.getUTCMinutes());
+  }
+  const s = String(v).trim();
+  let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:[ T,]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if (m) { let a = +m[3]; if (a < 100) a += 2000; return new Date(a, +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0)); }
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0));
+  return null;
+}
+function acharColunas(cab) {
+  const c = {}; const h = cab.map(norm);
+  const pega = (chave, teste) => { const i = h.findIndex(teste); if (i >= 0 && c[chave] == null) c[chave] = i; };
+  pega('id', x => x.includes('titulo') || x === 'id' || x === 'card');
+  pega('analista', x => x.startsWith('responsav'));
+  pega('analista', x => x === 'analista' || x.startsWith('analista'));
+  pega('fase', x => x.includes('fase atual'));
+  pega('criado', x => x.includes('inicio') || x.includes('criacao') || x.includes('criado'));
+  pega('concl', x => x.startsWith('conclusao') || x.includes('finalizado'));
+  for (const [k, a, b] of [['bA', 'backlog', 'atualiza'], ['aA', 'andamento', 'atualiza'], ['bC', 'backlog', 'consolida'], ['aC', 'andamento', 'consolida']]) {
+    pega(k + 'in', x => x.includes('entrada') && x.includes(a) && x.includes(b));
+    pega(k + 'out', x => x.includes('saida') && x.includes(a) && x.includes(b));
+  }
+  return c;
+}
+function primeiroNome(v) {
+  let s = String(v ?? '').trim();
+  if (s.startsWith('[')) { try { const p = JSON.parse(s); if (Array.isArray(p)) s = String(p[0] ?? ''); } catch (e) {} }
+  return s.split(/[;,\n]/)[0].trim();
+}
+function lerPlanilha(wb) {
+  for (const nome of wb.SheetNames) {
+    const linhas = XLSX.utils.sheet_to_json(wb.Sheets[nome], { header: 1, raw: true, defval: null });
+    for (let i = 0; i < Math.min(40, linhas.length); i++) {
+      const col = acharColunas(linhas[i] || []);
+      if (col.analista == null || col.fase == null) continue;
+      const lista = [];
+      for (const row of linhas.slice(i + 1)) {
+        const id = row[col.id], an = primeiroNome(row[col.analista]);
+        if (!id && !an) continue;
+        const fase = String(row[col.fase] ?? '').trim(), nf = norm(fase), f = {};
+        for (const p of FASES) {
+          const ei = lerData(row[col[p.k + 'in']]), so = lerData(row[col[p.k + 'out']]);
+          if (ei) f[p.k] = { in: ei, out: so };
+        }
+        const tipo = nf.includes('consolid') ? 'C' : nf.includes('atualiz') ? 'A' : (f.bC || f.aC) ? 'C' : 'A';
+        let concl = lerData(row[col.concl]);
+        const entregue = !!concl || nf.startsWith('entregue') || nf.includes('conclu') || nf.includes('finaliz');
+        if (entregue && !concl) { const outs = Object.values(f).map(x => x.out).filter(Boolean); if (outs.length) concl = new Date(Math.max(...outs)); }
+        const status = entregue ? 'entregue' : nf.includes('andamento') ? 'andamento' : 'backlog';
+        const criado = lerData(row[col.criado]) || (Object.values(f)[0] || {}).in || null;
+        lista.push({ id: String(id ?? '').trim() || '(sem título)', analista: an || SEM_RESP, fase, tipo, status, criado, concl, f });
+      }
+      if (lista.length) return { cards: lista, aba: nome };
+    }
+  }
+  return null;
+}
+
+/* ============ estado ============ */
+let DADOS = { cards: [], fonte: 'exemplo', arquivo: '', em: null };
+const F = { per: 'semana', tipo: 'todos', an: 'todos', busca: '', lim: 30 };
+let AGORA = new Date();
+const GH = (() => {
+  const h = location.hostname; if (!h.endsWith('.github.io')) return null;
+  const seg = location.pathname.split('/').filter(Boolean)[0];
+  return { owner: h.split('.')[0], repo: seg && !seg.includes('.') ? seg : h };
+})();
+const token = () => { try { return localStorage.getItem(CHAVE_TOKEN) || ''; } catch (e) { return ''; } };
+
+function datasDeVolta(lista) {
+  const D = x => x ? new Date(x) : null;
+  lista.forEach(c => { c.criado = D(c.criado); c.concl = D(c.concl); for (const k in c.f) c.f[k] = { in: D(c.f[k].in), out: D(c.f[k].out), d: c.f[k].d ?? null }; });
+  return lista;
+}
+function salvarDados() { try { localStorage.setItem(CHAVE, JSON.stringify(DADOS)); } catch (e) {} }
+function restaurarDados() {
+  try { const s = localStorage.getItem(CHAVE); if (!s) return false; const d = JSON.parse(s); datasDeVolta(d.cards); d.em = d.em ? new Date(d.em) : null; DADOS = d; return true; }
+  catch (e) { return false; }
+}
+function usarExemplo() { DADOS = { cards: gerarExemplo(new Date()), fonte: 'exemplo', arquivo: '', em: new Date() }; }
+
+/* ============ cálculos ============ */
+function intervalo(per) {
+  const h = sod(AGORA);
+  if (per === 'hoje') return [h, addD(h, 1)];
+  if (per === 'semana') { const s = segunda(AGORA); return [s, addD(s, 7)]; }
+  if (per === 'mes') return [new Date(h.getFullYear(), h.getMonth(), 1), new Date(h.getFullYear(), h.getMonth() + 1, 1)];
+  if (per === 'ano') return [new Date(h.getFullYear(), 0, 1), new Date(h.getFullYear() + 1, 0, 1)];
+  const datas = cards().flatMap(c => [c.criado, c.concl]).filter(Boolean);
+  const min = datas.length ? sod(new Date(Math.min(...datas))) : h;
+  const max = datas.length ? new Date(Math.max(+addD(sod(new Date(Math.max(...datas))), 1), +addD(h, 1))) : addD(h, 1);
+  return [min, max];
+}
+const base = () => cards().filter(c => (F.tipo === 'todos' || c.tipo === F.tipo) && (F.an === 'todos' || c.analista === F.an));
+const ciclo = c => c.concl && c.criado ? (c.concl - c.criado) / H : null;
+function tempoFase(c, k) {
+  const p = c.f[k]; if (!p || !p.in) return null;
+  if (p.out && p.d != null) return p.d;
+  const fim = p.out || (c.status !== 'entregue' ? AGORA : null);
+  return fim ? Math.max(0, (fim - p.in) / H) : null;
+}
+function faseAtual(c) {
+  if (c.status === 'entregue') return null;
+  const k = (c.status === 'andamento' ? 'a' : 'b') + c.tipo;
+  if (c.f[k]) return k;
+  const abertas = Object.keys(c.f).filter(x => !c.f[x].out);
+  return abertas[abertas.length - 1] || null;
+}
+function diasMeta(nome, a, b, ateHoje = true) {
+  const fim = ateHoje ? Math.min(+b, +addD(sod(AGORA), 1)) : +b, out = [];
+  for (let d = sod(a); d < fim; d = addD(d, 1)) if (diaDeMeta(nome, d)) out.push(d);
+  return out;
+}
+function esperado(nome, a, b) {
+  const hoje = sod(AGORA); let n = 0;
+  for (let d = sod(a); d < b && d < hoje; d = addD(d, 1)) if (diaDeMeta(nome, d)) n++;
+  const [i, f] = CFG.expediente, hrs = AGORA.getHours() + AGORA.getMinutes() / 60;
+  const frac = hoje >= a && hoje < b && diaDeMeta(nome, hoje) ? Math.min(1, Math.max(0, (hrs - i) / (f - i))) : 0;
+  return (n + frac) * metaDe(nome);
+}
+const metaTotal = (nome, a, b) => diasMeta(nome, a, b, false).length * metaDe(nome);
+function entregasPorDia(lista) {
+  const m = new Map();
+  for (const c of lista) if (c.concl) { const k = c.analista + '|' + +sod(c.concl); m.set(k, (m.get(k) || 0) + 1); }
+  return m;
+}
+function diasSemanaOrdem() { return [1, 2, 3, 4, 5, 6, 0].filter(w => CFG.dias.includes(w)); }
+
+/* ============ render ============ */
+function render() {
+  AGORA = new Date();
+  if (F.an !== 'todos' && !analistas().includes(F.an)) F.an = 'todos';
+  document.title = CFG.titulo; $('#titulo').textContent = CFG.titulo;
+  $('#pt-admin').hidden = !(GH && token());
+  renderFonte(); renderFiltros(); renderHero(); renderGeral();
+  const [a, b] = intervalo(F.per);
+  const bs = base();
+  const ent = bs.filter(c => c.concl && c.concl >= a && c.concl < b);
+  const nomes = F.an === 'todos' ? analistas() : [F.an];
+  const porDia = entregasPorDia(bs);
+  $('#intervalo').textContent = F.per === 'hoje' ? `Hoje, ${dataCurta(a)}` : `${dataCurta(a)} a ${dataCurta(addD(b, -1))}`;
+  renderKpis(bs, ent, nomes, a, b, porDia);
+  renderRanking(ent, a, b, porDia);
+  renderChart(ent, a, b, nomes);
+  renderFases(bs, a, b);
+  renderCalor(a, b);
+  renderAnalistas(ent, nomes, a, b, porDia);
+  renderAlertas(bs);
+  renderCards(bs, a, b);
+}
+
+function renderFonte() {
+  const n = DADOS.cards.length;
+  const lbl = $('label[for="arq"]');
+  lbl.style.display = podeCarregar() ? '' : 'none';
+  lbl.lastChild.textContent = GH && token() ? ' Publicar Excel para o time' : ' Carregar Excel do Pipefy';
+  $('#fonte').innerHTML = DADOS.fonte === 'exemplo'
+    ? `<span class="tag demo"><i></i>Dados de exemplo</span><span>Carregue o Excel exportado do Pipefy para ver os números reais.</span>`
+    : DADOS.fonte === 'pipefy'
+    ? `<span class="tag vivo"><i></i>Ao vivo do Pipefy</span><span>${num(n)} cards, última atualização ${dataHora(DADOS.em)}</span>`
+    : DADOS.fonte === 'publicado'
+    ? `<span class="tag real"><i></i>Planilha do Pipefy</span><span>${num(n)} cards, publicada em ${dataHora(DADOS.em)}</span>`
+    : `<span class="tag real"><i></i>${esc(DADOS.arquivo)}</span><span>${num(n)} cards, carregado em ${dataHora(DADOS.em)}</span><button class="link" id="voltar">Ver dados de exemplo</button>`;
+  const v = $('#voltar'); if (v) v.onclick = () => { usarExemplo(); try { localStorage.removeItem(CHAVE); } catch (e) {} render(); };
+}
+
+function botoes(el, itens, atual, aoEscolher) {
+  el.innerHTML = itens.map(([v, t, cor]) => `<button type="button" data-v="${esc(v)}" aria-pressed="${v === atual}">${cor ? `<span class="sw" style="background:${cor}"></span>` : ''}${esc(t)}</button>`).join('');
+  el.querySelectorAll('button').forEach(b => b.onclick = () => aoEscolher(b.dataset.v));
+}
+function renderFiltros() {
+  botoes($('#f-per'), [['hoje', 'Hoje'], ['semana', 'Semana'], ['mes', 'Mês'], ['ano', 'Ano'], ['tudo', 'Tudo']], F.per, v => { F.per = v; F.lim = 30; render(); });
+  botoes($('#f-tipo'), [['todos', 'Todos os tipos'], ['A', 'Atualização', 'var(--atu)'], ['C', 'Consolidação', 'var(--con)']], F.tipo, v => { F.tipo = v; render(); });
+  botoes($('#f-an'), [['todos', 'Todo o time'], ...analistas().map(n => [n, n.split(' ')[0]])], F.an, v => { F.an = v; render(); });
+}
+const filtrarPor = nome => { F.an = F.an === nome ? 'todos' : nome; render(); };
+
+function renderHero() {
+  const hoje = sod(AGORA), nomes = analistas(), porDia = entregasPorDia(cards());
+  const per = F.per, [a, b] = intervalo(per), ano = hoje.getFullYear();
+  const titulo = { hoje: 'Meta de hoje', semana: 'Meta da semana', mes: `Meta de ${MESES_L[hoje.getMonth()]}`, ano: `Meta de ${ano}`, tudo: 'Meta desde o início' }[per];
+  const oque = { hoje: 'hoje', semana: 'na semana', mes: 'no mês', ano: 'no ano', tudo: 'no total' }[per];
+  const metas = [...new Set(nomes.map(metaDe))];
+  $('#h-meta').textContent = `${titulo}, ${metas.length === 1 ? metas[0] + ' cards por dia de trabalho' : 'meta individual por analista'}`;
+
+  // colunas da faixa à direita: dias da semana (hoje/semana), semanas do mês (mês), meses (ano)
+  let cols = [];
+  if (per === 'hoje' || per === 'semana') {
+    const seg = segunda(AGORA);
+    cols = diasSemanaOrdem().map(w => { const d = addD(seg, (w + 6) % 7); return { a: d, b: addD(d, 1), l: DIAS_SEM[w], dia: true }; });
+  } else if (per === 'mes') {
+    let ini = segunda(a), n = 1;
+    for (; ini < b; ini = addD(ini, 7), n++) cols.push({ a: new Date(Math.max(+ini, +a)), b: new Date(Math.min(+addD(ini, 7), +b)), l: 'S' + n });
+  } else if (per === 'ano') {
+    for (let m = 0; m < 12; m++) cols.push({ a: new Date(ano, m, 1), b: new Date(ano, m + 1, 1), l: MESES[m][0].toUpperCase() });
+  }
+
+  let bateram = 0, noRitmo = 0, faltam = 0, comMeta = 0;
+  const linhas = nomes.map((nome, idx) => {
+    const md = metaDe(nome), m = metaTotal(nome, a, b), esp = Math.round(esperado(nome, a, b));
+    const feitos = cards().filter(c => c.analista === nome && c.concl && c.concl >= a && c.concl < b).sort((x, y) => x.concl - y.concl);
+    const n = feitos.length;
+    if (m) { comMeta++; if (n >= m) bateram++; if (n >= esp) noRitmo++; faltam += Math.max(0, m - n); }
+    let meio;
+    if (per === 'hoje') {
+      if (ausente(nome, hoje)) meio = `<span class="ausente">Ausente hoje</span>`;
+      else if (!m) meio = `<span class="ausente">Sem meta hoje</span>`;
+      else if (m <= 10) meio = Array.from({ length: m }, (_, i) => feitos[i]
+        ? `<span class="dot f ${feitos[i].tipo}" style="animation-delay:${idx * 90 + i * 60}ms" title="${esc(feitos[i].id)}, ${TIPO[feitos[i].tipo]}, ${dataHora(feitos[i].concl)}"></span>`
+        : `<span class="dot" title="Falta"></span>`).join('') + (n > m ? `<span class="extra">+${n - m}</span>` : '');
+      else meio = `<span class="hbar"><i style="width:${Math.min(100, n / m * 100)}%"></i></span>`;
+    } else if (!m) meio = `<span class="ausente">Sem meta no período</span>`;
+    else {
+      const st = n >= m ? 'Meta batida' : n >= esp ? 'No ritmo' : `${esp - n} abaixo do ritmo`;
+      meio = `<span class="hmeio"><span class="hbar"><i class="${n >= m ? 'cheio' : ''}" style="width:${Math.min(100, n / m * 100)}%"></i>${esp > 0 && esp < m ? `<em style="left:${esp / m * 100}%" title="Ritmo esperado até agora: ${esp}"></em>` : ''}</span>
+        <span class="hst ${n >= esp ? 'ok' : 'bad'}">${st}</span></span>`;
+    }
+    const faixa = cols.map(c => {
+      const alvo = metaTotal(nome, c.a, c.b), q = cards().filter(x => x.analista === nome && x.concl && x.concl >= c.a && x.concl < c.b).length;
+      const passado = c.b <= hoje, atual = c.a <= hoje && hoje < c.b;
+      let cls, txt = q;
+      if (c.a > hoje) { cls = 'fut'; txt = c.l; }
+      else if (!alvo) { cls = 'off'; txt = q || '–'; }
+      else cls = q >= alvo ? 'bateu' : passado ? (q >= alvo * .6 ? 'quase' : 'longe') : '';
+      const rot = c.dia ? `${c.l} ${dataCurta(c.a)}` : per === 'mes' ? `Semana ${c.l.slice(1)} (${dataCurta(c.a)} a ${dataCurta(addD(c.b, -1))})` : MESES_L[c.a.getMonth()];
+      return `<span class="dia ${cls} ${atual ? 'hoje' : ''}" title="${rot}: ${q} de ${alvo}">${txt}</span>`;
+    }).join('');
+    return `<button type="button" class="linha ${F.an === nome ? 'sel' : ''}" data-n="${esc(nome)}" aria-label="Filtrar por ${esc(nome)}">
+      <span class="pessoa"><span class="av">${esc(iniciais(nome))}</span><span class="nome">${esc(nome)}</span></span>
+      <span class="dots">${meio}</span>
+      <span class="placar ${m && n >= m ? 'ok' : ''}">${num(n)}<small>/${num(m)}</small></span>
+      <span class="semana">${faixa}</span></button>`;
+  }).join('');
+  const el = $('#linhas');
+  el.style.setProperty('--nd', cols.length || 1);
+  el.style.setProperty('--cw', per === 'ano' ? '31px' : '38px');
+  el.classList.toggle('sem-faixa', !cols.length);
+  el.innerHTML = nomes.length
+    ? `<div class="linha-cab"><span>Analista</span><span>Cards entregues ${oque}</span><span></span><span>${cols.map(c => `<span>${c.l}</span>`).join('')}</span></div>${linhas}`
+    : `<div class="vazio" style="color:var(--hero-muted)">Nenhum analista ativo. Abra os Ajustes para escolher quem conta.</div>`;
+  const periodoTxt = { semana: 'a semana', mes: 'o mês', ano: 'o ano', tudo: 'o período' }[per];
+  if (per === 'hoje') {
+    $('#hero-num').innerHTML = `${bateram}<small> de ${comMeta}</small>`;
+    $('#hero-txt').innerHTML = !comMeta ? 'Hoje ninguém tem meta (fim de semana, feriado ou ausência).'
+      : bateram === comMeta ? '<b>O time inteiro bateu a meta hoje.</b>'
+      : `analistas bateram a meta. Faltam <b>${faltam} ${faltam === 1 ? 'card' : 'cards'}</b> para o time inteiro chegar lá.`;
+  } else {
+    const fechado = b <= AGORA;
+    const conta = fechado ? bateram : noRitmo;
+    $('#hero-num').innerHTML = `${conta}<small> de ${comMeta}</small>`;
+    $('#hero-txt').innerHTML = !comMeta ? 'Ninguém tem meta neste período.'
+      : fechado ? `analistas bateram a meta d${periodoTxt}.`
+      : `analistas estão no ritmo para bater a meta d${periodoTxt}. ${faltam ? `Faltam <b>${num(faltam)} cards</b> para o time todo fechar ${periodoTxt}.` : '<b>O time já bateu a meta.</b>'}`;
+  }
+  el.querySelectorAll('.linha').forEach(l => l.onclick = () => filtrarPor(l.dataset.n));
+}
+
+function renderGeral() {
+  const nomes = analistas(), hoje = sod(AGORA), seg = segunda(AGORA);
+  const P = { hoje: [hoje, addD(hoje, 1)], sem: [seg, addD(seg, 7)],
+    mes: [new Date(hoje.getFullYear(), hoje.getMonth(), 1), new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1)],
+    ano: [new Date(hoje.getFullYear(), 0, 1), new Date(hoje.getFullYear() + 1, 0, 1)] };
+  const conta = (lista, [a, b]) => lista.filter(c => c.concl && c.concl >= a && c.concl < b);
+  const tile = (nome, lista, quem, time) => {
+    const linha = (rot, k) => {
+      const [a, b] = P[k], feitos = conta(lista, P[k]).length;
+      const meta = soma(quem.map(n => metaTotal(n, a, b))), esp = Math.round(soma(quem.map(n => esperado(n, a, b))));
+      if (!meta) return `<div class="gv-row"><span class="gv-l">${rot}</span><span class="gv-v"><b>${feitos}</b></span><span class="gv-s neu">Sem meta ${k === 'hoje' ? 'hoje' : 'neste período'}</span></div>`;
+      const pct = Math.min(100, feitos / meta * 100), pe = Math.min(100, esp / meta * 100);
+      let st, cls;
+      if (feitos >= meta) { st = 'Meta batida'; cls = 'ok'; }
+      else if (k === 'hoje') { st = `Faltam ${meta - feitos}`; cls = 'neu'; }
+      else if (feitos >= esp) { st = `No ritmo, faltam ${meta - feitos}`; cls = 'ok'; }
+      else { st = `${esp - feitos} abaixo do ritmo`; cls = 'bad'; }
+      return `<div class="gv-row ${({ hoje: 'hoje', semana: 'sem', mes: 'mes' })[F.per] === k ? 'foco' : ''}"><span class="gv-l">${rot}</span><span class="gv-v"><b>${num(feitos)}</b> de ${num(meta)}</span>
+        <span class="gv-bar"><i class="${feitos >= meta ? 'cheio' : ''}" style="width:${pct}%"></i>${k !== 'hoje' && esp > 0 && esp < meta ? `<em style="left:${pe}%" title="Ritmo esperado até agora: ${esp} cards"></em>` : ''}</span>
+        <span class="gv-s ${cls}">${st}</span></div>`;
+    };
+    const mesC = conta(lista, P.mes), nA = mesC.filter(c => c.tipo === 'A').length, ano = conta(lista, P.ano).length;
+    const sp = slaPct(mesC);
+    const abre = time ? '<div class="gv time">' : `<button type="button" class="gv ${F.an === nome ? 'sel' : ''}" data-n="${esc(nome)}" aria-label="Filtrar por ${esc(nome)}">`;
+    return `${abre}
+      <div class="gv-cab"><span class="av">${time ? 'T' : esc(iniciais(nome))}</span><div><div class="nm">${esc(time ? 'Time todo' : nome)}</div><div class="ano">${num(ano)} cards em ${hoje.getFullYear()}${time ? `, ${quem.length} ${quem.length === 1 ? 'analista' : 'analistas'}` : ''}</div></div></div>
+      ${linha('Hoje', 'hoje')}${linha('Semana', 'sem')}${linha('Mês', 'mes')}
+      <div class="gv-sla"><span>SLA no mês</span><b class="${sp == null ? '' : sp >= .9 ? 'ok' : sp >= .75 ? 'me' : 'bad'}">${pctTxt(sp)}</b></div>
+      <div class="gv-mix"><span><i style="background:var(--atu)"></i>${nA} atualizações</span><span><i style="background:var(--con)"></i>${mesC.length - nA} consolidações</span></div>
+    ${time ? '</div>' : '</button>'}`;
+  };
+  const metas = [...new Set(nomes.map(metaDe))];
+  const regra = metas.length === 1 ? `Meta de ${metas[0]} cards por dia de trabalho` : 'Cada analista tem a sua meta diária';
+  $('#gv-sub').textContent = `${regra}. O traço amarelo marca onde cada um deveria estar agora. SLA é a parte dos cards entregues no mês em até ${CFG.slaDias} ${CFG.slaDias === 1 ? 'dia útil' : 'dias úteis'} desde a entrada no backlog.`;
+  $('#geral').innerHTML = nomes.length ? tile('', cards(), nomes, true) + nomes.map(n => tile(n, cards().filter(c => c.analista === n), [n], false)).join('') : '<div class="vazio">Nenhum analista ativo.</div>';
+  $('#geral').querySelectorAll('button.gv').forEach(b => b.onclick = () => filtrarPor(b.dataset.n));
+}
+
+function renderKpis(bs, ent, nomes, a, b, porDia) {
+  const nA = ent.filter(c => c.tipo === 'A').length, nC = ent.length - nA;
+  const abertos = bs.filter(c => c.status !== 'entregue');
+  const estourados = abertos.filter(c => { const s = sla(c); return s && !s.ok; }).length;
+  const cic = media(ent.map(ciclo).filter(x => x != null));
+  let ok = 0, tot = 0;
+  for (const n of nomes) for (const d of diasMeta(n, a, b)) { tot++; if ((porDia.get(n + '|' + +d) || 0) >= metaDe(n)) ok++; }
+  const pct = tot ? Math.round(ok / tot * 100) : null;
+  const porAnDia = tot ? ent.length / tot : null, metaMed = media(nomes.map(metaDe)) || CFG.meta;
+  const sls = ent.map(sla).filter(Boolean), slaOk = sls.filter(s => s.ok).length, slaP = sls.length ? slaOk / sls.length : null;
+  const slaMed = media(sls.map(s => s.gasto));
+  $('#kpis').innerHTML = `
+    <div class="kpi"><div class="k">Cards entregues</div><div class="v">${num(ent.length)}</div>
+      <div class="split">${ent.length ? `<i style="width:${nA / ent.length * 100}%;background:var(--atu)"></i><i style="width:${nC / ent.length * 100}%;background:var(--con)"></i>` : ''}</div>
+      <div class="s"><b style="color:var(--atu-ink)">${nA}</b> atualizações, <b style="color:var(--con-ink)">${nC}</b> consolidações</div></div>
+    <div class="kpi destaque"><div class="k">SLA de ${CFG.slaDias} ${CFG.slaDias === 1 ? 'dia útil' : 'dias úteis'}</div><div class="v" style="color:${slaP == null ? 'inherit' : slaP >= .9 ? 'var(--ok)' : slaP >= .75 ? 'var(--warn)' : 'var(--bad)'}">${pctTxt(slaP)}</div>
+      <div class="s">${sls.length ? `${slaOk} de ${sls.length} no prazo, média de ${durUtil(slaMed)}` : 'Sem entregas no período'}</div></div>
+    <div class="kpi"><div class="k">Média por analista por dia</div><div class="v" style="color:${porAnDia == null ? 'inherit' : porAnDia >= metaMed ? 'var(--ok)' : 'var(--warn)'}">${porAnDia == null ? '–' : porAnDia.toFixed(1).replace('.', ',')}</div>
+      <div class="s">Meta é ${Number.isInteger(metaMed) ? metaMed : metaMed.toFixed(1).replace('.', ',')} por dia de trabalho</div></div>
+    <div class="kpi"><div class="k">Dias com meta batida</div><div class="v">${pct == null ? '–' : pct + '%'}</div>
+      <div class="s">${ok} de ${tot} dias de trabalho somando os analistas</div></div>
+    <div class="kpi"><div class="k">Tempo médio até entregar</div><div class="v">${dur(cic)}</div>
+      <div class="s">${abertos.length} em aberto${estourados ? `, <b style="color:var(--bad)">${estourados} com SLA estourado</b>` : ''}</div></div>`;
+}
+
+function statsAnalista(nome, ent, a, b, porDia) {
+  const e = ent.filter(c => c.analista === nome), dias = diasMeta(nome, a, b), m = metaDe(nome);
+  const ok = dias.filter(d => (porDia.get(nome + '|' + +d) || 0) >= m).length;
+  return { nome, n: e.length, a: e.filter(c => c.tipo === 'A').length, c: e.filter(c => c.tipo === 'C').length, m,
+    cic: media(e.map(ciclo).filter(x => x != null)), dia: dias.length ? e.length / dias.length : null,
+    ok, dias: dias.length, pct: dias.length ? ok / dias.length : null, sla: slaPct(e) };
+}
+function renderRanking(ent, a, b, porDia) {
+  const st = analistas().map(n => statsAnalista(n, ent, a, b, porDia)).sort((x, y) => y.n - x.n || (y.sla ?? -1) - (x.sla ?? -1) || (x.cic ?? 1e9) - (y.cic ?? 1e9));
+  if (!st.some(s => s.n)) { $('#ranking').innerHTML = `<div class="vazio">Nenhuma entrega neste período ainda.</div>`; return; }
+  const top = st.slice(0, 3), max = st[0].n || 1, pos = s => st.indexOf(s) + 1;
+  const podio = `<div class="podio">${[top[1], top[0], top[2]].filter(Boolean).map(s => `<button type="button" class="deg p${pos(s)}" data-n="${esc(s.nome)}" aria-label="Filtrar por ${esc(s.nome)}">
+      <div class="av">${esc(iniciais(s.nome))}</div><div class="nm">${esc(s.nome.split(' ')[0])}</div><div class="qt">${s.n} ${s.n === 1 ? 'card' : 'cards'}</div>
+      <div class="bloco">${pos(s)}</div></button>`).join('')}</div>`;
+  const lista = `<div class="rk">${st.map((s, i) => `<button type="button" class="rk-l" data-n="${esc(s.nome)}">
+      <span class="pos">${i + 1}º</span>
+      <span><span class="nm">${esc(s.nome)}</span><span class="barra"><i style="width:${s.a / max * 100}%;background:var(--atu)"></i><i style="width:${s.c / max * 100}%;background:var(--con)"></i></span></span>
+      <span class="num">${s.n}<small>SLA ${pctTxt(s.sla)}</small></span></button>`).join('')}</div>`;
+  $('#ranking').innerHTML = podio + lista;
+  $('#rk-sub').textContent = F.tipo === 'todos' ? 'Quem mais entregou no período. Em caso de empate, vence quem cumpriu mais o SLA' : `Entregas de ${TIPO[F.tipo].toLowerCase()} no período`;
+  $('#ranking').querySelectorAll('[data-n]').forEach(b => b.onclick = () => filtrarPor(b.dataset.n));
+}
+
+function renderChart(ent, a, b, nomes) {
+  let buckets = [], chave, meta = null, sub;
+  const span = (b - a) / DIA;
+  if (F.per === 'hoje') {
+    for (let h = 7; h <= 20; h++) buckets.push({ k: h, l: h + 'h', t: `${h}h às ${h + 1}h` });
+    chave = c => Math.min(20, Math.max(7, c.concl.getHours())); sub = 'Entregas por hora hoje';
+  } else if (span <= 62) {
+    for (let d = new Date(a); d < b; d = addD(d, 1)) buckets.push({ k: +d, l: F.per === 'semana' ? DIAS_SEM[d.getDay()] : String(d.getDate()), t: `${DIAS_SEM[d.getDay()]} ${dataCurta(d)}`, fds: !diaUtil(d), fut: d > AGORA });
+    chave = c => +sod(c.concl); meta = soma(nomes.map(metaDe));
+    sub = `Entregas por dia. A linha tracejada é a meta do dia para ${nomes.length === 1 ? 'o analista' : `os ${nomes.length} analistas`}`;
+  } else {
+    for (let d = new Date(a.getFullYear(), a.getMonth(), 1); d < b; d = new Date(d.getFullYear(), d.getMonth() + 1, 1)) buckets.push({ k: d.getFullYear() * 12 + d.getMonth(), l: MESES[d.getMonth()], t: `${MESES[d.getMonth()]} de ${d.getFullYear()}`, fut: d > AGORA });
+    chave = c => c.concl.getFullYear() * 12 + c.concl.getMonth(); sub = 'Entregas por mês';
+  }
+  const idx = new Map(buckets.map((x, i) => [x.k, i]));
+  buckets.forEach(x => { x.A = 0; x.C = 0; });
+  for (const c of ent) { const i = idx.get(chave(c)); if (i != null) buckets[i][c.tipo]++; }
+  const max = Math.max(1, ...buckets.map(x => x.A + x.C), meta || 0) * 1.08;
+  const passo = buckets.length > 20 ? Math.ceil(buckets.length / 10) : 1;
+  $('#ch-sub').textContent = sub;
+  $('#chart').innerHTML = `<div class="chart">${buckets.map(x => {
+      const tot = x.A + x.C, topo = x.C ? 'C' : 'A';
+      return `<div class="col" tabindex="0" style="${x.fds || x.fut ? 'opacity:.45' : ''}">
+        ${x.A ? `<i class="${topo === 'A' ? 'topo' : ''}" style="height:${x.A / max * 100}%;background:var(--atu)"></i>` : ''}
+        ${x.C ? `<i class="topo" style="height:${x.C / max * 100}%;background:var(--con)"></i>` : ''}
+        <span class="tt"><b>${esc(x.t)}</b><br>${tot} ${tot === 1 ? 'entrega' : 'entregas'}${tot ? `: ${x.A} atu., ${x.C} cons.` : ''}</span></div>`;
+    }).join('')}${meta ? `<div class="meta-linha" style="bottom:${meta / max * 100}%"><span>Meta ${meta}</span></div>` : ''}</div>
+    <div class="eixo">${buckets.map((x, i) => `<span>${i % passo === 0 ? esc(x.l) : ''}</span>`).join('')}</div>`;
+}
+
+function temposFase(lista, a, b, k) {
+  const out = [];
+  for (const c of lista) {
+    const p = c.f[k]; if (!p || !p.in) continue;
+    const ref = p.out || (c.status !== 'entregue' ? AGORA : null);
+    if (!ref || ref < a || p.in >= b) continue;
+    const t = tempoFase(c, k); if (t != null) out.push(t);
+  }
+  return out;
+}
+function renderFases(bs, a, b) {
+  const tipos = F.tipo === 'todos' ? ['A', 'C'] : [F.tipo];
+  const res = tipos.map(t => {
+    const fs = FASES.filter(f => f.t === t).map(f => { const v = temposFase(bs, a, b, f.k); return { k: f.k, nome: f.n, m: media(v), md: mediana(v), q: v.length }; });
+    const ent = bs.filter(c => c.tipo === t && c.concl && c.concl >= a && c.concl < b);
+    return { t, fs, cic: media(ent.map(ciclo).filter(x => x != null)), sla: slaPct(ent) };
+  });
+  const todos = res.flatMap(r => r.fs).filter(f => f.m != null);
+  if (!todos.length) { $('#fases').innerHTML = `<div class="vazio">Sem movimentação de cards neste período.</div>`; return; }
+  const pior = todos.reduce((x, y) => y.m > x.m ? y : x), marca = todos.length > 1;
+  $('#fases').innerHTML = `<div class="fluxo">${res.map(r => `<div class="fluxo-t">
+      <div class="tt2"><i style="background:var(--${r.t === 'A' ? 'atu' : 'con'})"></i>${TIPO[r.t]}</div>
+      <div class="etapas">${r.fs.map(f => `<div class="etapa ${marca && f === pior ? 'gargalo' : ''}">
+        ${marca && f === pior ? '<span class="flag">Mais demorada</span>' : ''}
+        <div class="en">${esc(f.nome)}</div>
+        <div class="ev">${dur(f.m)}</div><div class="es">${f.q ? `mediana ${dur(f.md)}, ${f.q} ${f.q === 1 ? 'card' : 'cards'}` : 'sem cards'}</div></div>`).join('')}</div>
+      <div class="total-ciclo">Do início à entrega: <b>${dur(r.cic)}</b> em média. SLA no prazo: <b>${pctTxt(r.sla)}</b></div></div>`).join('')}</div>`;
+}
+
+function renderCalor(a, b) {
+  const fases = FASES.filter(f => F.tipo === 'todos' || f.t === F.tipo), nomes = analistas();
+  const doTipo = cards().filter(c => F.tipo === 'todos' || c.tipo === F.tipo);
+  const ref = {}; fases.forEach(f => ref[f.k] = media(temposFase(doTipo, a, b, f.k)));
+  if (!Object.values(ref).some(x => x != null)) { $('#calor').innerHTML = `<div class="vazio">Sem movimentação de cards neste período.</div>`; return; }
+  const linhas = nomes.map(n => {
+    const meus = doTipo.filter(c => c.analista === n);
+    return `<tr><td class="l">${esc(n.split(' ')[0])}</td>${fases.map(f => {
+      const m = media(temposFase(meus, a, b, f.k));
+      if (m == null || !ref[f.k]) return `<td class="c0">–</td>`;
+      const r = m / ref[f.k], cls = r <= .8 ? 'c1' : r <= 1.2 ? 'c2' : r <= 1.6 ? 'c3' : 'c4';
+      return `<td class="${cls}" title="${esc(n)}: ${dur(m)} (time: ${dur(ref[f.k])})">${dur(m)}</td>`;
+    }).join('')}</tr>`;
+  }).join('');
+  $('#calor').innerHTML = `<div class="tabwrap"><table>
+    <thead><tr><th class="l"></th>${fases.map(f => `<th><span class="th-t"><i style="background:var(--${f.t === 'A' ? 'atu' : 'con'})"></i>${f.n}<span style="font-weight:500">${F.tipo === 'todos' ? (f.t === 'A' ? 'atualiz.' : 'consol.') : ''}</span></span></th>`).join('')}</tr></thead>
+    <tbody>${linhas}<tr><td class="l" style="color:var(--muted)">Time</td>${fases.map(f => `<td class="c0" style="color:var(--ink);font-weight:700">${dur(ref[f.k])}</td>`).join('')}</tr></tbody></table></div>`;
+}
+
+function renderAnalistas(ent, nomes, a, b, porDia) {
+  const st = nomes.map(n => statsAnalista(n, ent, a, b, porDia)).sort((x, y) => y.n - x.n);
+  $('#an-sub').textContent = `Dias de trabalho no período até hoje, descontando feriados e ausências. SLA de ${CFG.slaDias} ${CFG.slaDias === 1 ? 'dia útil' : 'dias úteis'}.`;
+  const cor = p => p == null ? '' : p >= .9 ? 'ok' : p >= .75 ? 'me' : 'ru';
+  $('#analistas').innerHTML = st.length ? `<table class="tab-an"><thead><tr>
+    <th class="l">Analista</th><th>Entregues</th><th>Atualização</th><th>Consolidação</th><th>Por dia</th><th>Meta do período</th><th>Dias com meta</th><th>SLA no prazo</th><th>Tempo por card</th></tr></thead>
+    <tbody>${st.map(s => { const cls = s.pct == null ? '' : s.pct >= .7 ? 'ok' : s.pct >= .4 ? 'me' : 'ru';
+      return `<tr><td class="l"><span style="display:inline-flex;align-items:center;gap:9px"><span class="av" style="width:28px;height:28px;font-size:11px;background:var(--surface2);color:var(--ink)">${esc(iniciais(s.nome))}</span>${esc(s.nome)}</span></td>
+      <td><b>${s.n}</b></td><td style="color:var(--atu-ink);font-weight:700">${s.a}</td><td style="color:var(--con-ink);font-weight:700">${s.c}</td>
+      <td>${s.dia == null ? '–' : s.dia.toFixed(1).replace('.', ',')}</td><td>${s.n} de ${s.dias * s.m}</td>
+      <td>${s.pct == null ? '–' : `<span class="pct ${cls}">${s.ok} de ${s.dias}</span>`}</td>
+      <td>${s.sla == null ? '–' : `<span class="pct ${cor(s.sla)}">${pctTxt(s.sla)}</span>`}</td><td>${dur(s.cic)}</td></tr>`; }).join('')}</tbody></table>`
+    : '<div class="vazio">Nenhum analista ativo.</div>';
+}
+
+function renderAlertas(bs) {
+  const ab = bs.filter(c => c.status !== 'entregue').map(c => { const k = faseAtual(c); return { c, k, t: k ? tempoFase(c, k) : null, s: sla(c) }; })
+    .sort((x, y) => (x.s?.prazo ?? Infinity) - (y.s?.prazo ?? Infinity));
+  if (!ab.length) { $('#alertas').innerHTML = `<div class="vazio">Nenhum card em aberto. Tudo entregue.</div>`; return; }
+  $('#alertas').innerHTML = `<div class="alertas">${ab.slice(0, 12).map(({ c, k, t, s }) => {
+    const estourou = s && !s.ok, perto = s && s.ok && s.resta < 8;
+    const cls = estourou ? 'r' : perto || t > CFG.alertaHoras ? 'a' : 'v';
+    const slaTxt = !s ? 'Sem data de entrada' : estourou ? `SLA estourado há ${durUtil(horasUteis(s.prazo, AGORA))}` : `SLA vence em ${durUtil(s.resta)}`;
+    return `<div class="al ${cls}"><div class="id"><span>${esc(c.id)}</span><span class="chip ${c.tipo}">${TIPO[c.tipo]}</span></div>
+      <div class="fs">${esc(c.analista)}, ${k ? FASES.find(f => f.k === k).n.toLowerCase() : esc(c.fase)} há ${dur(t)}</div>
+      <div class="tm">${slaTxt}</div>${s ? `<div class="fs">Prazo: ${dataHora(s.prazo)}</div>` : ''}</div>`; }).join('')}</div>
+    ${ab.length > 12 ? `<p class="nota">Mostrando os 12 com prazo mais próximo de ${ab.length} cards em aberto.</p>` : ''}`;
+}
+
+function renderCards(bs, a, b) {
+  const q = norm(F.busca);
+  let cs = bs.filter(c => c.status !== 'entregue' || (c.concl >= a && c.concl < b));
+  if (q) cs = cs.filter(c => norm(c.id + ' ' + c.analista + ' ' + c.fase).includes(q));
+  cs.sort((x, y) => (x.status === 'entregue') - (y.status === 'entregue') || (y.concl || y.criado) - (x.concl || x.criado));
+  if (!cs.length) { $('#cards').innerHTML = `<div class="vazio">${q ? 'Nenhum card encontrado com essa busca.' : 'Nenhum card neste período.'}</div>`; return; }
+  $('#cards').innerHTML = `<div class="lista"><div class="cl h"><span>Card</span><span>Analista</span><span>Situação</span><span>Tempo em cada fase</span><span style="text-align:right">SLA</span></div>
+    ${cs.slice(0, F.lim).map(c => {
+      const ks = FASES.filter(f => c.f[f.k]).map(f => ({ k: f.k, n: f.n, t: tempoFase(c, f.k) || 0 }));
+      const tot = soma(ks.map(x => x.t)) || 1, atual = faseAtual(c), s = sla(c);
+      return `<div class="cl"><span class="id" title="${esc(c.id)}">${esc(c.id)}</span><span class="an">${esc(c.analista)}</span>
+        <span class="st"><span class="chip ${c.tipo}">${TIPO[c.tipo]}</span> ${c.status === 'entregue' ? `entregue ${dataCurta(c.concl)}` : (atual ? FASES.find(f => f.k === atual).n.toLowerCase() : esc(c.fase))}</span>
+        <span class="tl">${ks.map(x => `<i class="${x.k} ${x.k === atual ? 'vivo' : ''}" style="width:${x.t / tot * 100}%" title="${x.n}: ${dur(x.t)}${x.k === atual ? ' (ainda nesta fase)' : ''}">${x.t / tot > .22 ? dur(x.t) : ''}</i>`).join('')}</span>
+        <span class="tot">${s ? `<span class="slab ${s.ok ? 'ok' : 'bad'}" title="${durUtil(s.gasto)} desde a entrada no backlog. Prazo ${dataHora(s.prazo)}">${durUtil(s.gasto)}</span>` : '–'}</span></div>`; }).join('')}</div>
+    ${cs.length > F.lim ? `<button class="btn mais" id="mais">Mostrar mais ${Math.min(30, cs.length - F.lim)} de ${cs.length - F.lim}</button>` : ''}`;
+  const m = $('#mais'); if (m) m.onclick = () => { F.lim += 30; renderCards(base(), ...intervalo(F.per)); };
+}
+
+/* ============ ajustes: tela de admin ============ */
+let RASC = null;
+const podeEditar = () => !GH || !!token();
+const FERIADOS_NAC = { 2026: [['2026-01-01', 'Confraternização'], ['2026-02-16', 'Carnaval'], ['2026-02-17', 'Carnaval'], ['2026-04-03', 'Sexta-feira Santa'], ['2026-04-21', 'Tiradentes'], ['2026-05-01', 'Dia do Trabalho'], ['2026-06-04', 'Corpus Christi'], ['2026-09-07', 'Independência'], ['2026-10-12', 'Nossa Senhora Aparecida'], ['2026-11-02', 'Finados'], ['2026-11-15', 'Proclamação da República'], ['2026-11-20', 'Consciência Negra'], ['2026-12-25', 'Natal']],
+  2027: [['2027-01-01', 'Confraternização'], ['2027-02-08', 'Carnaval'], ['2027-02-09', 'Carnaval'], ['2027-03-26', 'Sexta-feira Santa'], ['2027-04-21', 'Tiradentes'], ['2027-05-01', 'Dia do Trabalho'], ['2027-05-27', 'Corpus Christi'], ['2027-09-07', 'Independência'], ['2027-10-12', 'Nossa Senhora Aparecida'], ['2027-11-02', 'Finados'], ['2027-11-15', 'Proclamação da República'], ['2027-11-20', 'Consciência Negra'], ['2027-12-25', 'Natal']] };
+function abrirAjustes() { RASC = clone(CFG); desenharAjustes(); $('#ajustes').showModal(); }
+function desenharAjustes(msgErro = '') {
+  const ed = podeEditar(), nomes = todosNomes(RASC), ano = new Date().getFullYear();
+  const ativoR = n => RASC.analistas[n]?.ativo ?? (n !== SEM_RESP);
+  const nAtivos = nomes.filter(ativoR).length;
+  const selAn = nomes.filter(ativoR).map(n => `<option>${esc(n)}</option>`).join('');
+  const topo = !GH
+    ? `<div class="aj-caixa info">Nesta prévia os ajustes ficam salvos só neste navegador. No site publicado no GitHub, eles valem para todo o time e só você, como admin, consegue mudar.</div>`
+    : token()
+    ? `<div class="aj-caixa adm"><span>Você está como administrador</span><button type="button" class="link" id="aj-sair">Sair do modo admin</button></div>`
+    : `<div class="aj-caixa login"><h3>Entrar como administrador</h3><p>Só quem tem a chave de admin consegue mudar os ajustes. O resto do time só consegue ver.</p>
+        <div class="aj-add"><input class="campo" type="password" id="aj-tok" placeholder="Cole aqui sua chave de admin" autocomplete="off"><button type="button" class="btn prim" id="aj-entrar">Entrar</button></div>
+        ${msgErro ? `<div class="erro">${esc(msgErro)}</div>` : ''}</div>`;
+  $('#aj-corpo').innerHTML = `${topo}<fieldset ${ed ? '' : 'disabled'}>
+    <section class="aj-s"><h3>Meta diária</h3><p>Quantos cards cada analista precisa entregar por dia de trabalho.</p>
+      <div class="stepper"><button type="button" data-passo="-1" data-alvo="meta" aria-label="Diminuir">−</button><input id="aj-meta" type="number" min="1" max="100" value="${RASC.meta}" aria-label="Meta diária"><button type="button" data-passo="1" data-alvo="meta" aria-label="Aumentar">+</button><span>cards por dia</span></div></section>
+    <section class="aj-s"><h3>SLA</h3><p>Prazo contado da entrada no backlog até a entrega, só em dias úteis (sem fins de semana e feriados).</p>
+      <div class="stepper"><button type="button" data-passo="-1" data-alvo="sla" aria-label="Diminuir">−</button><input id="aj-sla" type="number" min="1" max="30" value="${RASC.slaDias}" aria-label="SLA em dias úteis"><button type="button" data-passo="1" data-alvo="sla" aria-label="Aumentar">+</button><span>dias úteis</span></div></section>
+    <section class="aj-s"><h3>Analistas <span class="cont">${nAtivos} ${nAtivos === 1 ? 'conta' : 'contam'} na meta</span></h3>
+      <p>Os nomes vêm do campo Responsável do Pipefy. Desligue quem não deve aparecer no painel. Deixe a meta em branco para usar a meta diária do time.</p>
+      <div class="aj-an-cab"><span>Conta</span><span>Nome</span><span style="text-align:center">Meta própria</span><span></span></div>
+      ${nomes.map(n => { const ex = RASC.extras.includes(n) && !DADOS.cards.some(c => c.analista === n);
+        return `<div class="aj-row ${ativoR(n) ? '' : 'off'}">
+          <label class="chave"><input type="checkbox" data-ativo="${esc(n)}" ${ativoR(n) ? 'checked' : ''} aria-label="${esc(n)} conta na meta"><span></span></label>
+          <span class="nm">${esc(n)}${ex ? '<small>Adicionado à mão, ainda sem cards</small>' : n === SEM_RESP ? '<small>Cards sem responsável no Pipefy</small>' : ''}</span>
+          <input class="campo" type="number" min="1" max="100" data-meta="${esc(n)}" value="${RASC.metas[n] ?? ''}" placeholder="${RASC.meta}" aria-label="Meta própria de ${esc(n)}">
+          ${ex ? `<button type="button" class="link rm" data-rmx="${esc(n)}">Remover</button>` : '<span></span>'}</div>`; }).join('')}
+      <div class="aj-add"><input class="campo" id="aj-novo" placeholder="Nome igual ao do Pipefy"><button type="button" class="btn" id="aj-add-an">Adicionar analista</button></div></section>
+    <section class="aj-s"><h3>Dias de trabalho</h3><p>Dias em que existe meta.</p>
+      <div class="dsem">${[1, 2, 3, 4, 5, 6, 0].map(w => `<button type="button" data-dia="${w}" aria-pressed="${RASC.dias.includes(w)}">${DIAS_SEM[w]}</button>`).join('')}</div></section>
+    <section class="aj-s"><h3>Feriados</h3><p>Nesses dias ninguém tem meta e o SLA não corre.</p>
+      <div class="aj-add"><input class="campo" type="date" id="aj-fer" aria-label="Data do feriado"><button type="button" class="btn" id="aj-add-fer">Adicionar</button>
+        ${FERIADOS_NAC[ano] ? `<button type="button" class="link" id="aj-nac">Incluir feriados nacionais de ${ano}</button>` : ''}</div>
+      <div class="fichas">${[...RASC.feriados].sort().map(f => `<span class="ficha">${dataCurta(deYmd(f))}/${f.slice(2, 4)}<button type="button" data-rmf="${f}" aria-label="Remover ${f}">×</button></span>`).join('') || '<span class="nota">Nenhum feriado cadastrado.</span>'}</div></section>
+    <section class="aj-s"><h3>Férias e folgas</h3><p>O analista fica sem meta nesses dias, então a ausência não conta contra ele.</p>
+      <div class="aj-add"><select class="campo" id="aj-aus-n" aria-label="Analista">${selAn}</select>
+        <input class="campo" type="date" id="aj-aus-de" aria-label="De"><input class="campo" type="date" id="aj-aus-ate" aria-label="Até">
+        <button type="button" class="btn" id="aj-add-aus">Adicionar</button></div>
+      <div class="fichas">${RASC.ausencias.map((x, i) => `<span class="ficha">${esc(x.nome.split(' ')[0])}, ${dataCurta(deYmd(x.de))}${x.ate !== x.de ? ` a ${dataCurta(deYmd(x.ate))}` : ''}<button type="button" data-rma="${i}" aria-label="Remover">×</button></span>`).join('') || '<span class="nota">Nenhuma ausência cadastrada.</span>'}</div></section>
+    <section class="aj-s"><h3>Alerta de card parado</h3><p>Card que passar desse tempo na mesma fase ganha destaque.</p>
+      <div class="stepper"><button type="button" data-passo="-1" data-alvo="alerta" aria-label="Diminuir">−</button><input id="aj-alerta" type="number" min="1" max="720" value="${RASC.alertaHoras}" aria-label="Horas"><button type="button" data-passo="1" data-alvo="alerta" aria-label="Aumentar">+</button><span>horas</span></div></section>
+    <section class="aj-s"><h3>Horário de trabalho</h3><p>Usado para calcular o ritmo esperado ao longo do dia.</p>
+      <div class="aj-add"><select class="campo" id="aj-h1" aria-label="Início">${Array.from({ length: 24 }, (_, h) => `<option value="${h}" ${h === +RASC.expediente[0] ? 'selected' : ''}>${h}h</option>`).join('')}</select>
+        <span>até</span><select class="campo" id="aj-h2" aria-label="Fim">${Array.from({ length: 24 }, (_, h) => `<option value="${h + 1}" ${h + 1 === +RASC.expediente[1] ? 'selected' : ''}>${h + 1}h</option>`).join('')}</select></div></section>
+    <section class="aj-s"><h3>Nome do painel</h3><div class="aj-add"><input class="campo" id="aj-titulo" maxlength="60" value="${esc(RASC.titulo)}"></div></section>
+  </fieldset>`;
+  $('#aj-pe').innerHTML = ed
+    ? `<button type="button" class="link" id="aj-padrao">Voltar ao padrão</button><span class="sp"></span><button class="btn" value="fechar">Cancelar</button><button type="button" class="btn prim" id="aj-salvar">Salvar ajustes</button>`
+    : `<span class="sp"></span><button class="btn" value="fechar">Fechar</button>`;
+  ligarAjustes();
+}
+function lerCampos() {
+  const v = id => $(id)?.value;
+  if ($('#aj-meta')) RASC.meta = +v('#aj-meta') || RASC.meta;
+  if ($('#aj-sla')) RASC.slaDias = +v('#aj-sla') || RASC.slaDias;
+  if ($('#aj-alerta')) RASC.alertaHoras = +v('#aj-alerta') || RASC.alertaHoras;
+  if ($('#aj-h1')) RASC.expediente = [+v('#aj-h1'), +v('#aj-h2')];
+  if ($('#aj-titulo')) RASC.titulo = v('#aj-titulo');
+  document.querySelectorAll('#aj-corpo [data-meta]').forEach(i => { if (i.value) RASC.metas[i.dataset.meta] = +i.value; else delete RASC.metas[i.dataset.meta]; });
+  document.querySelectorAll('#aj-corpo [data-ativo]').forEach(i => { RASC.analistas[i.dataset.ativo] = { ativo: i.checked }; });
+}
+function ligarAjustes() {
+  const redesenha = () => { lerCampos(); const top = $('#aj-corpo').scrollTop; desenharAjustes(); $('#aj-corpo').scrollTop = top; };
+  const on = (sel, fn) => { const el = $(sel); if (el) el.onclick = fn; };
+  document.querySelectorAll('#aj-corpo [data-passo]').forEach(b => b.onclick = () => {
+    const i = $({ meta: '#aj-meta', sla: '#aj-sla', alerta: '#aj-alerta' }[b.dataset.alvo]);
+    i.value = Math.max(+i.min, Math.min(+i.max, (+i.value || 0) + +b.dataset.passo));
+  });
+  document.querySelectorAll('#aj-corpo [data-ativo]').forEach(i => i.onchange = redesenha);
+  document.querySelectorAll('#aj-corpo [data-dia]').forEach(b => b.onclick = () => {
+    const w = +b.dataset.dia; lerCampos();
+    RASC.dias = RASC.dias.includes(w) ? RASC.dias.filter(x => x !== w) : [...RASC.dias, w];
+    if (!RASC.dias.length) RASC.dias = [w];
+    desenharAjustes();
+  });
+  on('#aj-add-an', () => { const n = $('#aj-novo').value.trim(); if (!n) return; lerCampos(); if (!RASC.extras.includes(n)) RASC.extras.push(n); RASC.analistas[n] = { ativo: true }; desenharAjustes(); });
+  document.querySelectorAll('#aj-corpo [data-rmx]').forEach(b => b.onclick = () => { lerCampos(); const n = b.dataset.rmx; RASC.extras = RASC.extras.filter(x => x !== n); delete RASC.analistas[n]; delete RASC.metas[n]; desenharAjustes(); });
+  on('#aj-add-fer', () => { const d = $('#aj-fer').value; if (!d) return; lerCampos(); if (!RASC.feriados.includes(d)) RASC.feriados.push(d); redesenha(); });
+  on('#aj-nac', () => { lerCampos(); for (const [d] of FERIADOS_NAC[new Date().getFullYear()] || []) if (!RASC.feriados.includes(d)) RASC.feriados.push(d); desenharAjustes(); });
+  document.querySelectorAll('#aj-corpo [data-rmf]').forEach(b => b.onclick = () => { lerCampos(); RASC.feriados = RASC.feriados.filter(x => x !== b.dataset.rmf); desenharAjustes(); });
+  on('#aj-add-aus', () => {
+    const nome = $('#aj-aus-n').value, de = $('#aj-aus-de').value, ate = $('#aj-aus-ate').value || de;
+    if (!nome || !de) return; lerCampos();
+    RASC.ausencias.push({ nome, de: de <= ate ? de : ate, ate: de <= ate ? ate : de }); desenharAjustes();
+  });
+  document.querySelectorAll('#aj-corpo [data-rma]').forEach(b => b.onclick = () => { lerCampos(); RASC.ausencias.splice(+b.dataset.rma, 1); desenharAjustes(); });
+  on('#aj-padrao', () => { const ex = RASC.extras; RASC = clone(PADRAO); RASC.extras = ex; desenharAjustes(); });
+  on('#aj-salvar', salvarAjustes);
+  on('#aj-sair', () => { try { localStorage.removeItem(CHAVE_TOKEN); } catch (e) {} desenharAjustes(); render(); });
+  on('#aj-entrar', entrarAdmin);
+  const tok = $('#aj-tok'); if (tok) tok.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); entrarAdmin(); } };
+}
+async function entrarAdmin() {
+  const t = $('#aj-tok').value.trim(); if (!t) return;
+  const b = $('#aj-entrar'); b.disabled = true; b.textContent = 'Conferindo…';
+  try {
+    const r = await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}`, { headers: { Authorization: `Bearer ${t}`, Accept: 'application/vnd.github+json' } });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !(j.permissions?.push || j.permissions?.admin)) throw new Error('Essa chave não tem permissão para alterar este painel.');
+    localStorage.setItem(CHAVE_TOKEN, t);
+    desenharAjustes(); render(); toast('Você entrou como administrador.');
+  } catch (e) { desenharAjustes(e.message.includes('permissão') ? e.message : 'Não consegui conferir a chave. Verifique se ela foi colada inteira.'); }
+}
+const b64 = s => btoa(unescape(encodeURIComponent(s)));
+async function salvarAjustes() {
+  lerCampos();
+  const novo = normalizarCfg(RASC); novo.salvoEm = new Date().toISOString();
+  const b = $('#aj-salvar'); b.disabled = true; b.textContent = 'Salvando…';
+  try {
+    if (GH) {
+      const url = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/config.json`;
+      const hd = { Authorization: `Bearer ${token()}`, Accept: 'application/vnd.github+json' };
+      const g = await fetch(url, { headers: hd, cache: 'no-store' });
+      let sha; if (g.ok) sha = (await g.json()).sha; else if (g.status !== 404) throw new Error('leitura ' + g.status);
+      const r = await fetch(url, { method: 'PUT', headers: hd, body: JSON.stringify({ message: 'Atualiza ajustes do painel', content: b64(JSON.stringify(novo, null, 2)), sha }) });
+      if (!r.ok) throw new Error(r.status === 401 || r.status === 403 ? 'A chave de admin não tem permissão de escrita ou venceu.' : 'O GitHub recusou o salvamento (' + r.status + ').');
+    }
+    try { localStorage.setItem(CHAVE_CFG, JSON.stringify(novo)); } catch (e) {}
+    CFG = novo; $('#ajustes').close(); render();
+    toast(GH ? 'Ajustes salvos. Em cerca de 1 minuto valem para todo o time.' : 'Ajustes salvos neste navegador.');
+  } catch (e) {
+    b.disabled = false; b.textContent = 'Salvar ajustes';
+    toast(e.message.startsWith('leitura') ? 'Não consegui falar com o GitHub. Tente de novo.' : e.message);
+  }
+}
+async function carregarCfg() {
+  let local = null, remoto = null;
+  try { local = JSON.parse(localStorage.getItem(CHAVE_CFG) || 'null'); } catch (e) {}
+  if (GH) {
+    try { const r = await fetch('config.json?t=' + Date.now(), { cache: 'no-store' }); if (r.ok) remoto = await r.json(); } catch (e) {}
+    CFG = normalizarCfg(local && (!remoto || (local.salvoEm || '') > (remoto.salvoEm || '')) ? local : remoto);
+  } else CFG = normalizarCfg(local);
+}
+
+/* ============ carregar arquivo e dados ao vivo ============ */
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.remove('on'), 4500); }
+async function carregarArquivo(file) {
+  if (!file) return;
+  if (typeof XLSX === 'undefined') { toast('Não foi possível abrir o leitor de Excel. Verifique a conexão e tente de novo.'); return; }
+  try {
+    const r = lerPlanilha(XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: false }));
+    if (!r) { toast('Não encontrei as colunas "Responsável" e "Fase atual" neste arquivo. Use o Excel exportado do Pipefy.'); return; }
+    const publicar = GH && token();
+    DADOS = { cards: r.cards, fonte: publicar ? 'publicado' : 'arquivo', arquivo: file.name, em: new Date() };
+    F.an = 'todos';
+    const [a] = intervalo(F.per);
+    if (!cards().some(c => c.concl && c.concl >= a)) F.per = 'tudo';
+    if (!publicar) salvarDados();
+    render();
+    if (publicar) {
+      toast('Publicando para o time…');
+      await publicarDados(r.cards, file.name);
+      toast(`${r.cards.length} cards publicados. Em cerca de 1 minuto todo o time vê os números novos.`);
+    } else toast(`${r.cards.length} cards carregados da aba "${r.aba}".`);
+  } catch (e) { console.error(e); toast(e.publicar ? e.message : 'Não consegui ler este arquivo. Salve como .xlsx e tente de novo.'); }
+}
+function podeCarregar() {
+  if (!GH) return DADOS.fonte !== 'pipefy';
+  if (token()) return true;
+  return !['pipefy', 'publicado'].includes(DADOS.fonte);
+}
+async function gravarNoGitHub(caminho, conteudo, mensagem) {
+  const url = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${caminho}`;
+  const hd = { Authorization: `Bearer ${token()}`, Accept: 'application/vnd.github+json' };
+  const g = await fetch(url, { headers: hd, cache: 'no-store' });
+  let sha; if (g.ok) sha = (await g.json()).sha; else if (g.status !== 404) { const e = new Error('Não consegui falar com o GitHub. Tente de novo.'); e.publicar = true; throw e; }
+  const r = await fetch(url, { method: 'PUT', headers: hd, body: JSON.stringify({ message: mensagem, content: b64(conteudo), sha }) });
+  if (!r.ok) { const e = new Error(r.status === 401 || r.status === 403 ? 'A chave de admin não tem permissão de escrita ou venceu.' : `O GitHub recusou o salvamento (${r.status}).`); e.publicar = true; throw e; }
+}
+async function publicarDados(lista, arquivo) {
+  // Títulos podem ter nome de cliente: mantém só códigos (ex.: CARD-001); o resto vira "Card N".
+  const codigo = /^[A-Za-z]{0,10}[-_ #]?\d{1,10}$/;
+  const limpos = lista.map((c, i) => ({ ...c, id: codigo.test(String(c.id).trim()) ? c.id : `Card ${i + 1}` }));
+  await gravarNoGitHub('dados.json', JSON.stringify({ atualizadoEm: new Date().toISOString(), origem: 'excel', arquivo, cards: limpos }), 'Publica planilha do Pipefy');
+}
+async function carregarPipefy() {
+  if (location.protocol === 'file:') return false;
+  try {
+    const r = await fetch('dados.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return false;
+    const j = await r.json(); if (!j || !Array.isArray(j.cards)) return false;
+    DADOS = { cards: datasDeVolta(j.cards), fonte: j.origem === 'excel' ? 'publicado' : 'pipefy', arquivo: j.arquivo || 'Pipefy', em: j.atualizadoEm ? new Date(j.atualizadoEm) : new Date() };
+    return true;
+  } catch (e) { return false; }
+}
+
+$('#arq').onchange = e => { carregarArquivo(e.target.files[0]); e.target.value = ''; };
+$('#abrir-ajustes').onclick = abrirAjustes;
+let arrasto = 0;
+addEventListener('dragenter', e => { if (podeCarregar() && [...(e.dataTransfer?.types || [])].includes('Files')) { arrasto++; $('#drop').classList.add('on'); } });
+addEventListener('dragleave', () => { if (--arrasto <= 0) { arrasto = 0; $('#drop').classList.remove('on'); } });
+addEventListener('dragover', e => e.preventDefault());
+addEventListener('drop', e => { e.preventDefault(); arrasto = 0; $('#drop').classList.remove('on'); if (podeCarregar()) carregarArquivo(e.dataTransfer.files[0]); });
+$('#busca').oninput = e => { F.busca = e.target.value; F.lim = 30; renderCards(base(), ...intervalo(F.per)); };
+const fil = $('#filtros');
+new IntersectionObserver(([e]) => fil.classList.toggle('fix', e.intersectionRatio < 1), { threshold: [1], rootMargin: '-1px 0px 0px 0px' }).observe(fil);
+
+(async () => {
+  await carregarCfg();
+  const vivo = await carregarPipefy();
+  if (!vivo && !restaurarDados()) usarExemplo();
+  render();
+  setInterval(async () => {
+    if ($('#ajustes').open) return;
+    if (DADOS.fonte === 'pipefy' || DADOS.fonte === 'publicado') { await carregarCfg(); await carregarPipefy(); render(); }
+    else { AGORA = new Date(); renderHero(); renderGeral(); }
+  }, 5 * 60000);
+})();
+</script>
+</body>
+</html>
