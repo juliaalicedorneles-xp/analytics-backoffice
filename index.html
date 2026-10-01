@@ -78,6 +78,11 @@ button{cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-ink)}
 .seg button .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:0;border:1px solid rgba(128,128,128,.35)}
 .intervalo{color:var(--muted);font-size:13.5px;margin-left:auto;font-weight:500}
+.datas{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px 3px 3px 12px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.datas.ativo{border-color:var(--xp);box-shadow:0 0 0 2px color-mix(in srgb,var(--xp) 35%,transparent)}
+.datas input{font:inherit;font-weight:700;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:5px 8px;min-height:32px;color-scheme:light dark}
+.datas input:focus{outline:2px solid var(--xp);outline-offset:1px}
+@media (max-width:560px){.datas{display:flex;width:100%;padding-left:10px}.datas input{flex:1;min-width:0;padding:5px 4px}}
 
 h2.secao{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02em;margin:34px 0 4px}
 p.secao{color:var(--muted);font-size:14px;margin:0 0 16px}
@@ -435,6 +440,7 @@ dialog#ajustes::backdrop{background:rgba(0,0,0,.6)}
 <div class="wrap">
   <nav class="filtros" id="filtros" aria-label="Filtros">
     <div class="seg" id="f-per" role="group" aria-label="Período"></div>
+    <div class="datas" id="f-datas" role="group" aria-label="Período personalizado"><span>De</span><input type="date" id="f-de" aria-label="Data inicial"><span>até</span><input type="date" id="f-ate" aria-label="Data final"></div>
     <div class="seg" id="f-tipo" role="group" aria-label="Tipo de card"></div>
     <div class="seg" id="f-an" role="group" aria-label="Analista"></div>
     <div class="intervalo" id="intervalo"></div>
@@ -732,7 +738,7 @@ function lerPlanilha(wb) {
 
 /* ============ estado ============ */
 let DADOS = { cards: [], fonte: 'exemplo', arquivo: '', em: null };
-const F = { per: 'semana', tipo: 'todos', an: 'todos', busca: '', lim: 30 };
+const F = { de: null, ate: null, per: 'semana', tipo: 'todos', an: 'todos', busca: '', lim: 30 };
 let AGORA = new Date();
 const GH = (() => {
   const h = location.hostname; if (!h.endsWith('.github.io')) return null;
@@ -760,6 +766,7 @@ function intervalo(per) {
   if (per === 'semana') { const s = segunda(AGORA); return [s, addD(s, 7)]; }
   if (per === 'mes') return [new Date(h.getFullYear(), h.getMonth(), 1), new Date(h.getFullYear(), h.getMonth() + 1, 1)];
   if (per === 'ano') return [new Date(h.getFullYear(), 0, 1), new Date(h.getFullYear() + 1, 0, 1)];
+  if (per === 'custom' && F.de && F.ate) return [sod(F.de), addD(sod(F.ate), 1)];
   const datas = cards().flatMap(c => [c.criado, c.concl]).filter(Boolean);
   const min = datas.length ? sod(new Date(Math.min(...datas))) : h;
   const max = datas.length ? new Date(Math.max(+addD(sod(new Date(Math.max(...datas))), 1), +addD(h, 1))) : addD(h, 1);
@@ -844,16 +851,29 @@ function botoes(el, itens, atual, aoEscolher) {
 }
 function renderFiltros() {
   botoes($('#f-per'), [['hoje', 'Hoje'], ['semana', 'Semana'], ['mes', 'Mês'], ['ano', 'Ano'], ['tudo', 'Tudo']], F.per, v => { F.per = v; F.lim = 30; render(); });
+  const [da, db] = intervalo(F.per);
+  $('#f-de').value = isoDia(da); $('#f-ate').value = isoDia(addD(db, -1));
+  $('#f-datas').classList.toggle('ativo', F.per === 'custom');
   botoes($('#f-tipo'), [['todos', 'Todos os tipos'], ['A', 'Atualização', 'var(--atu)'], ['C', 'Consolidação', 'var(--con)']], F.tipo, v => { F.tipo = v; render(); });
   botoes($('#f-an'), [['todos', 'Todo o time'], ...analistas().map(n => [n, n.split(' ')[0]])], F.an, v => { F.an = v; render(); });
 }
+const isoDia = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const lerDia = v => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); return m ? new Date(+m[1], m[2] - 1, +m[3]) : null; };
+function escolherDatas() {
+  let de = lerDia($('#f-de').value), ate = lerDia($('#f-ate').value);
+  if (!de || !ate) return;
+  if (de > ate) [de, ate] = [ate, de];
+  F.de = de; F.ate = ate; F.per = 'custom'; F.lim = 30; render();
+}
+$('#f-de').onchange = escolherDatas; $('#f-ate').onchange = escolherDatas;
 const filtrarPor = nome => { F.an = F.an === nome ? 'todos' : nome; render(); };
 
 function renderHero() {
   const hoje = sod(AGORA), nomes = analistas(), porDia = entregasPorDia(cards());
   const per = F.per, [a, b] = intervalo(per), ano = hoje.getFullYear();
-  const titulo = { hoje: 'Meta de hoje', semana: 'Meta da semana', mes: `Meta de ${MESES_L[hoje.getMonth()]}`, ano: `Meta de ${ano}`, tudo: 'Meta desde o início' }[per];
-  const oque = { hoje: 'hoje', semana: 'na semana', mes: 'no mês', ano: 'no ano', tudo: 'no total' }[per];
+  const titulo = { hoje: 'Meta de hoje', semana: 'Meta da semana', mes: `Meta de ${MESES_L[hoje.getMonth()]}`, ano: `Meta de ${ano}`, tudo: 'Meta desde o início',
+    custom: +a === +addD(b, -1) ? `Meta de ${dataCurta(a)}` : `Meta de ${dataCurta(a)} a ${dataCurta(addD(b, -1))}` }[per];
+  const oque = { hoje: 'hoje', semana: 'na semana', mes: 'no mês', ano: 'no ano', tudo: 'no total', custom: 'no período' }[per];
   const metas = [...new Set(nomes.map(metaDe))];
   $('#h-meta').textContent = `${titulo}, ${metas.length === 1 ? metas[0] + ' cards por dia de trabalho' : 'meta individual por analista'}`;
 
@@ -867,6 +887,11 @@ function renderHero() {
     for (; ini < b; ini = addD(ini, 7), n++) cols.push({ a: new Date(Math.max(+ini, +a)), b: new Date(Math.min(+addD(ini, 7), +b)), l: 'S' + n });
   } else if (per === 'ano') {
     for (let m = 0; m < 12; m++) cols.push({ a: new Date(ano, m, 1), b: new Date(ano, m + 1, 1), l: MESES[m][0].toUpperCase() });
+  } else if (per === 'custom') {
+    const dias = Math.round((b - a) / DIA);
+    if (dias <= 7) for (let d = new Date(a); d < b; d = addD(d, 1)) cols.push({ a: d, b: addD(d, 1), l: DIAS_SEM[d.getDay()], dia: true });
+    else if (dias <= 62) { let ini = segunda(a), n = 1; for (; ini < b; ini = addD(ini, 7), n++) cols.push({ a: new Date(Math.max(+ini, +a)), b: new Date(Math.min(+addD(ini, 7), +b)), l: 'S' + n, sem: true }); }
+    else if (dias <= 400) for (let d = new Date(a.getFullYear(), a.getMonth(), 1); d < b; d = new Date(d.getFullYear(), d.getMonth() + 1, 1)) cols.push({ a: new Date(Math.max(+d, +a)), b: new Date(Math.min(+new Date(d.getFullYear(), d.getMonth() + 1, 1), +b)), l: MESES[d.getMonth()][0].toUpperCase(), mes: true });
   }
 
   let bateram = 0, noRitmo = 0, faltam = 0, comMeta = 0;
@@ -885,7 +910,7 @@ function renderHero() {
       else meio = `<span class="hbar"><i style="width:${Math.min(100, n / m * 100)}%"></i></span>`;
     } else if (!m) meio = `<span class="ausente">Sem meta no período</span>`;
     else {
-      const st = n >= m ? 'Meta batida' : n >= esp ? 'No ritmo' : `${esp - n} abaixo do ritmo`;
+      const st = n >= m ? 'Meta batida' : b <= AGORA ? `Faltaram ${m - n}` : n >= esp ? 'No ritmo' : `${esp - n} abaixo do ritmo`;
       meio = `<span class="hmeio"><span class="hbar"><i class="${n >= m ? 'cheio' : ''}" style="width:${Math.min(100, n / m * 100)}%"></i>${esp > 0 && esp < m ? `<em style="left:${esp / m * 100}%" title="Ritmo esperado até agora: ${esp}"></em>` : ''}</span>
         <span class="hst ${n >= esp ? 'ok' : 'bad'}">${st}</span></span>`;
     }
@@ -896,7 +921,7 @@ function renderHero() {
       if (c.a > hoje) { cls = 'fut'; txt = c.l; }
       else if (!alvo) { cls = 'off'; txt = q || '–'; }
       else cls = q >= alvo ? 'bateu' : passado ? (q >= alvo * .6 ? 'quase' : 'longe') : '';
-      const rot = c.dia ? `${c.l} ${dataCurta(c.a)}` : per === 'mes' ? `Semana ${c.l.slice(1)} (${dataCurta(c.a)} a ${dataCurta(addD(c.b, -1))})` : MESES_L[c.a.getMonth()];
+      const rot = c.dia ? `${c.l} ${dataCurta(c.a)}` : (per === 'mes' || c.sem) ? `Semana ${c.l.slice(1)} (${dataCurta(c.a)} a ${dataCurta(addD(c.b, -1))})` : MESES_L[c.a.getMonth()];
       return `<span class="dia ${cls} ${atual ? 'hoje' : ''}" title="${rot}: ${q} de ${alvo}">${txt}</span>`;
     }).join('');
     return `<button type="button" class="linha ${F.an === nome ? 'sel' : ''}" data-n="${esc(nome)}" aria-label="Filtrar por ${esc(nome)}">
@@ -907,12 +932,12 @@ function renderHero() {
   }).join('');
   const el = $('#linhas');
   el.style.setProperty('--nd', cols.length || 1);
-  el.style.setProperty('--cw', per === 'ano' ? '31px' : '38px');
+  el.style.setProperty('--cw', per === 'ano' || cols.some(c => c.mes) ? '31px' : '38px');
   el.classList.toggle('sem-faixa', !cols.length);
   el.innerHTML = nomes.length
     ? `<div class="linha-cab"><span>Analista</span><span>Cards entregues ${oque}</span><span></span><span>${cols.map(c => `<span>${c.l}</span>`).join('')}</span></div>${linhas}`
     : `<div class="vazio" style="color:var(--hero-muted)">Nenhum analista ativo. Abra os Ajustes para escolher quem conta.</div>`;
-  const periodoTxt = { semana: 'a semana', mes: 'o mês', ano: 'o ano', tudo: 'o período' }[per];
+  const periodoTxt = { semana: 'a semana', mes: 'o mês', ano: 'o ano', tudo: 'o período', custom: 'o período' }[per];
   if (per === 'hoje') {
     $('#hero-num').innerHTML = `${bateram}<small> de ${comMeta}</small>`;
     $('#hero-txt').innerHTML = !comMeta ? 'Hoje ninguém tem meta (fim de semana, feriado ou ausência).'
