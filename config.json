@@ -29,7 +29,7 @@
       "ativo": false
     },
     "Júlia Alice Dorneles": {
-      "ativo": true
+      "ativo": false
     },
     "Leonardo Pimenta": {
       "ativo": true
@@ -44,7 +44,7 @@
       "ativo": false
     },
     "Pedro Azevedo": {
-      "ativo": true
+      "ativo": false
     },
     "Pedro Rosselli": {
       "ativo": true
@@ -91,5 +91,5 @@
     9,
     19
   ],
-  "salvoEm": "2026-09-29T01:41:15.563Z"
+  "salvoEm": "2026-10-01T12:09:14.224Z"
 }
